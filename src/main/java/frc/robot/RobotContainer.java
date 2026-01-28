@@ -4,11 +4,10 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.ExampleSubsystem;
-import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.commands.TeleOpDriveCommand;
+import frc.robot.robotarians.Conditioning;
+import frc.robot.subsystems.DriveSubsystem;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -20,14 +19,23 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
+  private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController =
-      new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  private final Conditioning m_driveXConditioning = new Conditioning();
+  private final Conditioning m_driveYConditioning = new Conditioning();
+  private final Conditioning m_turnConditioning = new Conditioning();
+  private static double m_speedMultiplier = 1.0;
+
+  private final CommandJoystick m_leftJoystick = new CommandJoystick(RobotMap.kLeftJoystick);
+  private final CommandJoystick m_rightJoystick = new CommandJoystick(RobotMap.kRightJoystick);
+  private final CommandJoystick m_buttonBox = new CommandJoystick(RobotMap.kButtonBox); 
+
+  private final Robot m_robot;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
-  public RobotContainer() {
+  public RobotContainer(Robot robot) {
+    m_robot = robot;
+
     // Configure the trigger bindings
     configureBindings();
   }
@@ -42,22 +50,38 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    m_driveSubsystem.setDefaultCommand(new TeleOpDriveCommand(m_driveSubsystem,
+      () -> getDriveXInput(), () -> getDriveYInput(), () -> getTurnInput(),
+      () -> m_robot.isTeleopEnabled()));
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    new Trigger(m_exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(m_exampleSubsystem));
+    // new Trigger(m_exampleSubsystem::exampleCondition)
+    //     .onTrue(new ExampleCommand(m_exampleSubsystem));
 
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
-    m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+    // m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
   }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+  public double getDriveXInput()
+  {
+    // We getY() here because of the FRC coordinate system being turned 90 degrees
+    return m_driveXConditioning.condition(-m_leftJoystick.getY())
+            * DriveSubsystem.kMaxSpeedMetersPerSecond
+            * m_speedMultiplier;
+  }
+
+  public double getDriveYInput()
+  {
+    // We getX() here becasuse of the FRC coordinate system being turned 90 degrees
+    return m_driveYConditioning.condition(-m_leftJoystick.getX())
+            * DriveSubsystem.kMaxSpeedMetersPerSecond
+            * m_speedMultiplier;
+  }
+
+  public double getTurnInput()
+  {
+    return m_turnConditioning.condition(-m_rightJoystick.getX())
+            * DriveSubsystem.kMaxAngularSpeedRadiansPerSecond
+            * m_speedMultiplier;
   }
 }
