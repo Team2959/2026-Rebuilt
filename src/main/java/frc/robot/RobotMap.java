@@ -16,6 +16,9 @@ public final class RobotMap {
 
     // CAN motor addresses
         // SparkMax
+        // Kraken
+    public static final int kTopShooterWheelkraken = 21;
+    public static final int kBottomShooterWheelkraken = 22;
 
     // Analog Input addresses
     public static final int kFrontLeftAnalogInput = 2; 
