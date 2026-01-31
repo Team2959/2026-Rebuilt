@@ -84,7 +84,7 @@ public class DriveSubsystem extends SubsystemBase {
                 RobotMap.kZeroedFrontRight, RobotMap.kFrontRightAnalogInput, "Front Right");
         m_backLeft = new SwerveModuleThrifty(RobotMap.kBackLeftModule,
                 RobotMap.kZeroedBackLeft, RobotMap.kBackLeftAnalogInput,  "Back Left");
-        m_backRight = new SwerveModuleThrifty(RobotMap.kBackRigvhtModule,
+        m_backRight = new SwerveModuleThrifty(RobotMap.kBackRightModule,
                 RobotMap.kZeroedBackRight, RobotMap.kBackRightAnalogInput, "Back Right");
         // m_backRight = new SwerveModuleThriftyDirectAnalog(RobotMap.kBackRigvhtModule,
         //         RobotMap.kZeroedBackRight, "Back Right");
@@ -97,7 +97,7 @@ public class DriveSubsystem extends SubsystemBase {
         m_poseEstimator =
         new SwerveDrivePoseEstimator(
             m_kinematics,
-            m_navX.getRotation2d(),
+            getAngle(),
             new SwerveModulePosition[] {
               m_frontLeft.getPosition(),
               m_frontRight.getPosition(),

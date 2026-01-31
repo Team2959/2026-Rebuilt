@@ -9,18 +9,18 @@ public final class RobotMap {
     // Swerve Motor Assemblies - SparkMax
     // Drive motor CAN == module #
     // Steer motor CAN == module # + 10
-    public static final int kFrontLeftModule = 4;
-    public static final int kBackLeftModule = 1;
-    public static final int kBackRigvhtModule = 2;
+    public static final int kFrontLeftModule = 2;
+    public static final int kBackLeftModule = 4;
+    public static final int kBackRightModule = 1;
     public static final int kFrontRightModule = 3;
 
     // CAN motor addresses
         // SparkMax
 
     // Analog Input addresses
-    public static final int kFrontLeftAnalogInput = 0;
-    public static final int kBackLeftAnalogInput = 1;
-    public static final int kBackRightAnalogInput = 2;
+    public static final int kFrontLeftAnalogInput = 2; 
+    public static final int kBackLeftAnalogInput = 0;    // swerve module 4
+    public static final int kBackRightAnalogInput = 1;
     public static final int kFrontRightAnalogInput = 3;
 
     // REV Pneumatic Hub solenoid addresses
@@ -41,8 +41,8 @@ public final class RobotMap {
     // Zeroed values, should be in radians
     // source is google document in Electrical for team - module data
     public static final double kDegreesToRadians = Math.PI * 2.0 / 360.0;
-    public static final double kZeroedFrontLeft = 178.8 * kDegreesToRadians;    // for FL module 4
+    public static final double kZeroedFrontLeft = 212.5 * kDegreesToRadians;    // for FL module 2
     public static final double kZeroedFrontRight = 3.7 * kDegreesToRadians;   // for FR module 3
-    public static final double kZeroedBackLeft = 138.9 * kDegreesToRadians;     // for BL module 1
-    public static final double kZeroedBackRight = 212.5 * kDegreesToRadians;    // for BR module 2
+    public static final double kZeroedBackLeft = 178.8 * kDegreesToRadians;     // for BL module 4
+    public static final double kZeroedBackRight = 138.9 * kDegreesToRadians;    // for BR module 1
 };
