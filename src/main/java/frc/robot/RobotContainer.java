@@ -89,4 +89,11 @@ public class RobotContainer {
             * DriveSubsystem.kMaxAngularSpeedRadiansPerSecond
             * m_speedMultiplier;
   }
+
+  public void initialize()
+  {
+    // m_speedMultiplier = m_speedSub.get();
+
+    m_driveSubsystem.initialize();
+  }
 }
