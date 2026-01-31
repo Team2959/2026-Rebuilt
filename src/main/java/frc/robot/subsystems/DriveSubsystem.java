@@ -74,7 +74,7 @@ public class DriveSubsystem extends SubsystemBase {
     /** Creates a new DriveSubsystem. */
     public DriveSubsystem()
     {
-        m_navX = new AHRS(NavXComType.kMXP_UART);
+        m_navX = new AHRS(NavXComType.kMXP_SPI);
         m_kinematics = new SwerveDriveKinematics(kFrontLeftLocation, kFrontRightLocation, kBackLeftLocation,
                 kBackRightLocation);
 
