@@ -16,6 +16,7 @@ public final class RobotMap {
 
     // CAN motor addresses
         // SparkMax
+        public static final int kFeederMotorSparkMax = 31;
         // Kraken
     public static final int kTopShooterWheelkraken = 21;
     public static final int kBottomShooterWheelkraken = 22;
