@@ -4,9 +4,11 @@
 
 package frc.robot;
 
+import frc.robot.commands.ShooterVelocityfromDistanceCommand;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.robotarians.Conditioning;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.ShooterSubsytem;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -21,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+  // private final ShooterSubsytem m_ShooterSubsytem = new ShooterSubsytem();
 
   private final Conditioning m_driveXConditioning = new Conditioning();
   private final Conditioning m_driveYConditioning = new Conditioning();
@@ -56,7 +59,9 @@ public class RobotContainer {
       () -> m_robot.isTeleopEnabled()));
 
     m_rightJoystick.button(RobotMap.kRightResetNavXButton).onTrue(new InstantCommand(() -> {m_driveSubsystem.resetNavX();}, m_driveSubsystem));
-    m_leftJoystick.button(RobotMap.kLeftLockWheels).whileTrue(m_driveSubsystem.lockWheelsCommand());    
+    m_leftJoystick.button(RobotMap.kLeftLockWheels).whileTrue(m_driveSubsystem.lockWheelsCommand());
+    
+    // m_buttonBox.button(RobotMap.kfire).whileTrue(new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem));
 
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
     // new Trigger(m_exampleSubsystem::exampleCondition)

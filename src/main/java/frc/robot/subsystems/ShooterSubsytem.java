@@ -4,7 +4,11 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
@@ -19,7 +23,10 @@ public class ShooterSubsytem extends SubsystemBase {
 
   private TalonFX m_topShooterWheel = new TalonFX(RobotMap.kTopShooterWheelkraken);
   private TalonFX m_bottomShooterWheel = new TalonFX(RobotMap.kBottomShooterWheelkraken);
+  private Slot0Configs m_slot0Configs = new Slot0Configs();
 
+  private VelocityVoltage m_topVelocityVoltage;
+  private VelocityVoltage m_bottomVelocityVoltage;  
 
   private static final double kP = 0.0005;
   private static final double kI = 0.000001;
@@ -49,12 +56,26 @@ public class ShooterSubsytem extends SubsystemBase {
 
   /** Creates a new Shootersubsytem. */
   public ShooterSubsytem() {
+    m_topVelocityVoltage = new VelocityVoltage(0);
+    m_bottomVelocityVoltage = new VelocityVoltage(0);
 
+    m_slot0Configs.kS = 0.05; // Add 0.05 V output to overcome static friction
+    m_slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
+    m_slot0Configs.kP = 0.05; // An error of 1 rps results in 0.05 V output
+    m_slot0Configs.kI = 0; // no output for integrated error
+    m_slot0Configs.kD = 0; // no output for error derivative
+    m_topShooterWheel.getConfigurator().apply(m_slot0Configs);
+    m_topShooterWheel.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
+    m_topShooterWheel.setNeutralMode(NeutralModeValue.Coast);
+    m_bottomShooterWheel.getConfigurator().apply(m_slot0Configs);
+    m_bottomShooterWheel.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
+    m_bottomShooterWheel.setNeutralMode(NeutralModeValue.Coast);
+    
     // get the subtable called "serveMod1"
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Shooter");
 
-   // PID topic
+    // PID topic 
     var kpTopic = datatable.getDoubleTopic("kP");
     kpTopic.publish().set(kP);
     m_kPSub = kpTopic.subscribe(kP);
@@ -97,5 +118,17 @@ public class ShooterSubsytem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+  }
+
+  public void stopShooter(){
+    m_topShooterWheel.set(0);
+    m_bottomShooterWheel.set(0);
+  }
+
+  public void setVelocityfromDistance(double distance){
+    // converts distance to velocity for accuracy 
+    // command each motor to control to the desired velocity
+    m_topShooterWheel.setControl(m_topVelocityVoltage.withVelocity(0));
+    m_bottomShooterWheel.setControl(m_bottomVelocityVoltage.withVelocity(0));
   }
 }
