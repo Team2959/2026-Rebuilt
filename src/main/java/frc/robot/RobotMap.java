@@ -17,6 +17,8 @@ public final class RobotMap {
     // CAN motor addresses
         // SparkMax
         public static final int kFeederMotorSparkMax = 31;
+        public static final int kIntakeMotorSparkMax = 32;
+        public static final int kTurretMotorSparkMax = 33;
         // Kraken
     public static final int kTopShooterWheelkraken = 21;
     public static final int kBottomShooterWheelkraken = 22;
@@ -41,7 +43,9 @@ public final class RobotMap {
     public static final int kRightResetNavXButton = 10;
 
     // Co-Piolt Button board
-    public static final int kfire = 1;
+    public static final int kFire = 1;
+    public static final int kIntake = 2;
+    public static final int kReverseIntake = 3;
 
     // Zeroed values, should be in radians
     // source is google document in Electrical for team - module data
