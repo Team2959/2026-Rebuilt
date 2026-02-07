@@ -7,6 +7,9 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
 
@@ -14,12 +17,28 @@ public class FeederSubsystem extends SubsystemBase {
 
   private SparkMax m_FeederMotor = new SparkMax(RobotMap.kFeederMotorSparkMax, MotorType.kBrushless);
 
-  /** Creates a new FeederSubsystem. */
-  public FeederSubsystem() {}
+  private static final double defaultspeed = 0.5;
+  private final DoubleSubscriber m_FeederSpeedSub;
+  private double m_FeederSpeed = defaultspeed;
 
+  /** Creates a new FeederSubsystem. */
+  public FeederSubsystem() {
+ NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    NetworkTable datatable = inst.getTable("Feeder");
+
+    var speedTopic = datatable.getDoubleTopic("FeederSpeed");
+    speedTopic.publish().set(defaultspeed);
+    m_FeederSpeedSub = speedTopic.subscribe(defaultspeed);
+  }
+int m_ticks = 0;
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+
+    m_ticks++;
+    if (m_ticks % 15 != 7)
+        return;
+    dashboardUpdate();
   }
 
   public void stopFeeder(){
@@ -27,6 +46,10 @@ public class FeederSubsystem extends SubsystemBase {
   }
 
   public void startFeeder(){
-    m_FeederMotor.set(0.5);
+    m_FeederMotor.set(m_FeederSpeed);  
+  }
+
+  public void dashboardUpdate() {
+    m_FeederSpeed = m_FeederSpeedSub.get();
   }
 }

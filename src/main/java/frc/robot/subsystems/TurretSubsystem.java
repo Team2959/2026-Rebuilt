@@ -17,6 +17,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -46,7 +47,10 @@ public class TurretSubsystem extends SubsystemBase {
   private final BooleanPublisher m_goToTargetPub;
   private final BooleanSubscriber m_updatePidSub;
   private final BooleanPublisher m_updatePidPub;
-
+  
+  private final DoublePublisher m_motorAppliedOutputPub;
+  private final DoublePublisher m_velocityPub;
+  private final DoublePublisher m_positionPub;
 
   /** Creates a new TurretSubsystem. */
   public TurretSubsystem() {    
@@ -95,11 +99,31 @@ public class TurretSubsystem extends SubsystemBase {
     m_goToTargetPub = goToTargetAngle.publish();
     m_goToTargetPub.set(false);
     m_goToTargetSub = goToTargetAngle.subscribe(false);
+
+    m_positionPub = datatable.getDoubleTopic("Position").publish();
+    m_positionPub.set(0);
+
+    m_velocityPub = datatable.getDoubleTopic("Velocity").publish();
+    m_velocityPub.set(0);
+
+    m_motorAppliedOutputPub = datatable.getDoubleTopic("MotorAppliedOutput").publish();
+    m_motorAppliedOutputPub.set(0);
   }
 
+  int m_ticks = 0;
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+
+    m_ticks++;
+    if (m_ticks % 15 != 5)
+        return;
+
+    m_positionPub.set(m_turretEncoder.getPosition());
+    m_velocityPub.set(m_turretEncoder.getVelocity());
+    m_motorAppliedOutputPub.set(m_turretMotor.getAppliedOutput());
+
+    dashboardUpdate();
   }
 
   public void stopTurret(){
