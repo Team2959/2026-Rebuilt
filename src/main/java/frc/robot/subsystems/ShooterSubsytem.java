@@ -47,9 +47,6 @@ public class ShooterSubsytem extends SubsystemBase {
   private final BooleanSubscriber m_updatePidSub;
   private final BooleanPublisher m_updatePidPub;
 
-  private double m_targetTopSpeed = 0;
-  private double m_targetBottomSpeed = 0;
-
   private final DoublePublisher m_topAppliedOutputPublisher;
   private final DoublePublisher m_bottomAppliedOutputPublisher;
 
@@ -112,12 +109,18 @@ public class ShooterSubsytem extends SubsystemBase {
 
     m_topAppliedOutputPublisher = datatable.getDoubleTopic("Top Applied Output").publish();
     m_bottomAppliedOutputPublisher = datatable.getDoubleTopic("Bottom Applied Output").publish();
-
   }
 
+  int m_ticks = 0;
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+  
+    m_ticks++;
+    if (m_ticks % 15 != 13)
+        return;
+  
+    dashboardUpdate();
   }
 
   public void stopShooter(){
@@ -128,7 +131,33 @@ public class ShooterSubsytem extends SubsystemBase {
   public void setVelocityfromDistance(double distance){
     // converts distance to velocity for accuracy 
     // command each motor to control to the desired velocity
-    m_topShooterWheel.setControl(m_topVelocityVoltage.withVelocity(0));
-    m_bottomShooterWheel.setControl(m_bottomVelocityVoltage.withVelocity(0));
+    setVelocity(0, 0);
+  }
+
+  private void setVelocity(double top, double bottom){
+    m_topShooterWheel.setControl(m_topVelocityVoltage.withVelocity(top));
+    m_bottomShooterWheel.setControl(m_bottomVelocityVoltage.withVelocity(bottom));
+  }
+
+  private void dashboardUpdate(){
+    // m_topAppliedOutputPublisher.set(m_topShooterWheel;
+
+    m_topVelocityPub.set(m_topShooterWheel.getVelocity().getValueAsDouble());
+    m_bottomVelocityPub.set(m_bottomShooterWheel.getVelocity().getValueAsDouble());
+
+    if (m_updatePidSub.get()) {
+      double kp = m_kPSub.get();
+      double ki = m_kISub.get();
+      double kd = m_kDSub.get();
+      double kf = m_kFfSub.get();
+
+
+    }
+
+    if (m_goToTargetSub.get()) {
+      setVelocity(m_topTargetVelocitySub.get(), m_bottomTargetVelocitySub.get() );
+
+      m_goToTargetPub.set(false);
+    }
   }
 }
