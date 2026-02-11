@@ -10,7 +10,7 @@ import frc.robot.robotarians.Conditioning;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.ShooterSubsytem;
+import frc.robot.subsystems.ClimbSubsystem;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
@@ -29,6 +29,7 @@ public class RobotContainer {
   // private final ShooterSubsytem m_ShooterSubsytem = new ShooterSubsytem();
   // private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
   // private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
+  // private final ClimbSubsystem m_ClimbSubsystem = new ClimbSubsystem();
 
   private final Conditioning m_driveXConditioning = new Conditioning();
   private final Conditioning m_driveYConditioning = new Conditioning();

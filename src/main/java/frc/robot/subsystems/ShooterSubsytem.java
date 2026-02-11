@@ -117,7 +117,7 @@ public class ShooterSubsytem extends SubsystemBase {
     // This method will be called once per scheduler run
   
     m_ticks++;
-    if (m_ticks % 15 != 13)
+    if (m_ticks % 15 != 11)
         return;
   
     dashboardUpdate();
@@ -149,9 +149,15 @@ public class ShooterSubsytem extends SubsystemBase {
       double kp = m_kPSub.get();
       double ki = m_kISub.get();
       double kd = m_kDSub.get();
-      double kf = m_kFfSub.get();
 
+      m_slot0Configs.kP = kp;
+      m_slot0Configs.kI = ki;
+      m_slot0Configs.kD = kd;
 
+      m_topShooterWheel.getConfigurator().apply(m_slot0Configs);
+      m_bottomShooterWheel.getConfigurator().apply(m_slot0Configs);
+
+      m_updatePidPub.set(false);
     }
 
     if (m_goToTargetSub.get()) {

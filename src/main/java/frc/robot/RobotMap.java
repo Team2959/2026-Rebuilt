@@ -22,6 +22,8 @@ public final class RobotMap {
         // Kraken
     public static final int kTopShooterWheelkraken = 21;
     public static final int kBottomShooterWheelkraken = 22;
+    public static final int kRotateMotorkraken = 34;
+    public static final int kExtendMotorkraken = 35;
 
     // Analog Input addresses
     public static final int kFrontLeftAnalogInput = 2; 
