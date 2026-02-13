@@ -1,0 +1,13 @@
+Climbing 
+Auto- rotate to tower, while extending to LevelOnePrep step = retract to LevelOneEngage
+Start of Teleop - get off tower 
+extend to LevelOnePrep
+rotate back
+retract arm 
+parallel
+rotate back
+Sequential
+wait x time 
+arms down to starting
+
+End Game
