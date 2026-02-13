@@ -18,20 +18,24 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
+import frc.robot.subsystems.ClimbRotateSubsystem.RotatePositionType;
 
-public class ClimbSubsystem extends SubsystemBase {
+public class ClimbExtendSubsystem extends SubsystemBase {
+  public enum ExtendPositionType{
+    Starting,
+    LevelOnePrep,
+    LevelOneEngage,
+    LevelTwoPrep,
+    LevelTwoEngage,
+    LevelThreePrep,
+    LevelThreeEngage
+  }
 
-  private TalonFX m_rotateMotor = new TalonFX(RobotMap.kTopShooterWheelkraken);
   private TalonFX m_extendMotor = new TalonFX(RobotMap.kBottomShooterWheelkraken);
-  private Slot0Configs m_rotateConfig = new Slot0Configs();
   private Slot0Configs m_extendConfig = new Slot0Configs();
 
-  private PositionVoltage m_rotatePositionVoltage;
   private PositionVoltage m_extendPositionVoltage;  
 
-  private static final double rotateKp = 0.01;
-  private static final double rotateKi = 0.0;
-  private static final double rotateKd = 0.0;
   private static final double extendKp = 0.01;
   private static final double extendKi = 0.0;
   private static final double extendKd = 0.0;
@@ -39,35 +43,20 @@ public class ClimbSubsystem extends SubsystemBase {
   private final DoubleSubscriber m_kPSub;
   private final DoubleSubscriber m_kISub;
   private final DoubleSubscriber m_kDSub;
-  private final DoubleSubscriber m_rotateTargetSub;
   private final DoubleSubscriber m_extendTargetSub;
-  private final DoublePublisher m_rotatePositionPub;
   private final DoublePublisher m_extendPositionPub;
 
   private final BooleanSubscriber m_goToTargetSub;
   private final BooleanPublisher m_goToTargetPub;
   private final BooleanSubscriber m_updatePidSub;
   private final BooleanPublisher m_updatePidPub;
-  private final BooleanSubscriber m_rotateOrExtendSub;
-  private final BooleanPublisher m_rotateOrExtendPub;
 
-  private final DoublePublisher m_RotateAppliedOutputPublisher;
   private final DoublePublisher m_ExtendAppliedOutputPublisher;
 
 
   /** Creates a new Shootersubsytem. */
-  public ClimbSubsystem() {
-     m_rotatePositionVoltage = new PositionVoltage(0);
+  public ClimbExtendSubsystem() {
      m_extendPositionVoltage = new PositionVoltage(0);
-
-    m_rotateConfig.kS = 0.05; // Add 0.05 V output to overcome static friction
-    m_rotateConfig.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
-    m_rotateConfig.kP = rotateKp; // An error of 1 rps results in 0.05 V output
-    m_rotateConfig.kI = rotateKi; // no output for integrated error
-    m_rotateConfig.kD = rotateKd; // no output for error derivative
-    m_rotateMotor.getConfigurator().apply(m_rotateConfig);
-    m_rotateMotor.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
-    m_rotateMotor.setNeutralMode(NeutralModeValue.Coast);
 
     m_extendConfig.kS = 0.05; // Add 0.05 V output to overcome static friction
     m_extendConfig.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
@@ -82,26 +71,23 @@ public class ClimbSubsystem extends SubsystemBase {
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Climb");
 
+    // PID topic     
+
     // PID topic 
     var kpTopic = datatable.getDoubleTopic("kP");
-    kpTopic.publish().set(rotateKp);
-    m_kPSub = kpTopic.subscribe(rotateKp);
+    kpTopic.publish().set(extendKp);
+    m_kPSub = kpTopic.subscribe(extendKp);
     var kiTopic = datatable.getDoubleTopic("kI");
-    kiTopic.publish().set(rotateKi);
-    m_kISub = kiTopic.subscribe(rotateKi);
+    kiTopic.publish().set(extendKi);
+    m_kISub = kiTopic.subscribe(extendKi);
     var kDTopic = datatable.getDoubleTopic("kD");
-    kDTopic.publish().set(rotateKd);
-    m_kDSub = kDTopic.subscribe(rotateKd);
+    kDTopic.publish().set(extendKd);
+    m_kDSub = kDTopic.subscribe(extendKd);
 
-    var rotateTargetTopic = datatable.getDoubleTopic("Rotate Target");
-    rotateTargetTopic.publish().set(0);
-    m_rotateTargetSub = rotateTargetTopic.subscribe(0);
-    
     var extendTargetTopic = datatable.getDoubleTopic("Extend Target");
     extendTargetTopic.publish().set(0);
     m_extendTargetSub = extendTargetTopic.subscribe(0);
 
-    m_rotatePositionPub = datatable.getDoubleTopic("Rotate Position").publish();
     m_extendPositionPub = datatable.getDoubleTopic("Extend Position").publish();
 
     var goToTarget = datatable.getBooleanTopic("go to Target");
@@ -114,12 +100,6 @@ public class ClimbSubsystem extends SubsystemBase {
     m_updatePidPub.set(false);
     m_updatePidSub = updatePID.subscribe(false);
 
-    var rotateOrExtend = datatable.getBooleanTopic("Rotate Or Extend");
-    m_rotateOrExtendPub = rotateOrExtend.publish();
-    m_rotateOrExtendPub.set(false);
-    m_rotateOrExtendSub = rotateOrExtend.subscribe(false);
-
-    m_RotateAppliedOutputPublisher = datatable.getDoubleTopic("Rotate Applied Output").publish();
     m_ExtendAppliedOutputPublisher = datatable.getDoubleTopic("Extend Applied Output").publish();
   }
 
@@ -136,23 +116,54 @@ public class ClimbSubsystem extends SubsystemBase {
   }
 
   public void stopShooter(){
-    m_rotateMotor.set(0);
     m_extendMotor.set(0);
   }
 
-  private void setRotatePosition(double position){
-    m_rotateMotor.setControl(m_rotatePositionVoltage.withPosition(position));
+  private double positionTypeToValue(ExtendPositionType position){
+    switch (position) {
+      case LevelOnePrep:
+        return 10;
+      case LevelOneEngage:
+        return 8;
+      case LevelTwoPrep:
+        return 20;
+      case LevelTwoEngage:
+        return 18;
+      case LevelThreePrep:
+        return 30;
+      case LevelThreeEngage:
+        return 28;
+      case Starting:
+      default:
+        // will keep target at 0
+        return 0;
+      }
+  }
+
+  public void setExtendPosition(ExtendPositionType position){
+    setExtendPosition(positionTypeToValue(position));
   }
 
   private void setExtendPosition(double position){
     m_extendMotor.setControl(m_extendPositionVoltage.withPosition(position));
   }
 
+  public void holdAtCurrentPosition(){
+    setExtendPosition(getCurrentPosition());
+  }
+
+  public boolean isAtTargetPosition(ExtendPositionType target){
+    return Math.abs(getCurrentPosition() - positionTypeToValue(target)) < 1;
+  }
+
+  private double getCurrentPosition()
+  {
+    return m_extendMotor.getPosition().getValueAsDouble();
+  }
 
   private void dashboardUpdate(){
     // m_topAppliedOutputPublisher.set(m_topShooterWheel;
 
-    // m_topVelocityPub.set(m_rotateMotor.getVelocity().getValueAsDouble());
     // m_bottomVelocityPub.set(m_extendRetractMotor.getVelocity().getValueAsDouble());
 
     if (m_updatePidSub.get()) {
@@ -160,18 +171,12 @@ public class ClimbSubsystem extends SubsystemBase {
       double ki = m_kISub.get();
       double kd = m_kDSub.get();
 
-      m_rotateConfig.kP = kp;
-      m_rotateConfig.kI = ki;
-      m_rotateConfig.kD = kd;
-
-      m_rotateMotor.getConfigurator().apply(m_rotateConfig);
-      m_extendMotor.getConfigurator().apply(m_rotateConfig);
+      m_extendMotor.getConfigurator().apply(m_extendConfig);
 
       m_updatePidPub.set(false);
     }
 
     if (m_goToTargetSub.get()) {
-      setRotatePosition(m_rotateTargetSub.get());
       setExtendPosition( m_extendTargetSub.get() );
 
       m_goToTargetPub.set(false);
