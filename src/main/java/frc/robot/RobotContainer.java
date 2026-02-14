@@ -29,7 +29,6 @@ public class RobotContainer {
   // private final ShooterSubsytem m_ShooterSubsytem = new ShooterSubsytem();
   // private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
   // private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
-  // private final ClimbSubsystem m_ClimbSubsystem = new ClimbSubsystem();
 
   private final Conditioning m_driveXConditioning = new Conditioning();
   private final Conditioning m_driveYConditioning = new Conditioning();

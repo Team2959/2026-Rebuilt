@@ -18,7 +18,9 @@ public final class RobotMap {
         // SparkMax
         public static final int kFeederMotorSparkMax = 31;
         public static final int kIntakeMotorSparkMax = 32;
+        public static final int KIntakeExtendMotorSparkMax = 36;
         public static final int kTurretMotorSparkMax = 33;
+        public static final int kHopperMotorSparkMax = 37;
         // Kraken
     public static final int kTopShooterWheelkraken = 21;
     public static final int kBottomShooterWheelkraken = 22;

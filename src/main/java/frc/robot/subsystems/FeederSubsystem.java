@@ -38,12 +38,12 @@ int m_ticks = 0;
     // This method will be called once per scheduler run
 
     m_ticks++;
-    if (m_ticks % 15 != 7)
+    if (m_ticks % 19 != 19)
         return;
     dashboardUpdate();
   }
 
-  public void stopFeeder(){
+  private void stopFeeder(){
     m_FeederMotor.set(0);
   }
 
@@ -51,7 +51,7 @@ int m_ticks = 0;
     return new InstantCommand(() -> stopFeeder(), this);
   }
 
-  public void startFeeder(){
+  private void startFeeder(){
     m_FeederMotor.set(m_FeederSpeed);  
   }
 

@@ -26,7 +26,7 @@ public class ClimbRotateSubsystem extends SubsystemBase {
     Retracted
   }
 
-  private TalonFX m_rotateMotor = new TalonFX(RobotMap.kTopShooterWheelkraken);
+  private TalonFX m_rotateMotor = new TalonFX(RobotMap.kRotateMotorkraken);
   private Slot0Configs m_rotateConfig = new Slot0Configs();
 
   private PositionVoltage m_rotatePositionVoltage;
@@ -47,7 +47,6 @@ public class ClimbRotateSubsystem extends SubsystemBase {
   private final BooleanPublisher m_updatePidPub;
 
   private final DoublePublisher m_RotateAppliedOutputPublisher;
-
 
   /** Creates a new Shootersubsytem. */
   public ClimbRotateSubsystem() {
@@ -102,13 +101,13 @@ public class ClimbRotateSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
   
     m_ticks++;
-    if (m_ticks % 15 != 13)
+    if (m_ticks % 15 != 2)
         return;
   
     dashboardUpdate();
   }
 
-  public void stopShooter(){
+  public void stopClimb(){
     m_rotateMotor.set(0);
   }
 
