@@ -25,37 +25,39 @@ public class FeederSubsystem extends SubsystemBase {
 
   /** Creates a new FeederSubsystem. */
   public FeederSubsystem() {
- NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Feeder");
 
     var speedTopic = datatable.getDoubleTopic("FeederSpeed");
     speedTopic.publish().set(defaultspeed);
     m_FeederSpeedSub = speedTopic.subscribe(defaultspeed);
   }
-int m_ticks = 0;
+
+  int m_ticks = 0;
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
 
     m_ticks++;
     if (m_ticks % 19 != 19)
-        return;
+      return;
     dashboardUpdate();
   }
 
-  private void stopFeeder(){
+  private void stopFeeder() {
     m_FeederMotor.set(0);
   }
 
-  public Command stopfeederCommand(){
+  public Command stopfeederCommand() {
     return new InstantCommand(() -> stopFeeder(), this);
   }
 
-  private void startFeeder(){
-    m_FeederMotor.set(m_FeederSpeed);  
+  private void startFeeder() {
+    m_FeederMotor.set(m_FeederSpeed);
   }
 
-  public Command startfeederCommand(){
+  public Command startfeederCommand() {
     return new InstantCommand(() -> startFeeder(), this);
   }
 

@@ -31,7 +31,6 @@ public class TurretSubsystem extends SubsystemBase {
   private SparkClosedLoopController m_turretController;
   private final SparkMaxConfig m_turretConfig;
 
-
   private static final double kP = 0.0005;
   private static final double kI = 0.000001;
   private static final double kD = 0.0;
@@ -42,26 +41,26 @@ public class TurretSubsystem extends SubsystemBase {
   private final DoubleSubscriber m_kDSub;
   private final DoubleSubscriber m_kFfSub;
   private final DoubleSubscriber m_targetPositionSub;
-  
+
   private final BooleanSubscriber m_goToTargetSub;
   private final BooleanPublisher m_goToTargetPub;
   private final BooleanSubscriber m_updatePidSub;
   private final BooleanPublisher m_updatePidPub;
-  
+
   private final DoublePublisher m_motorAppliedOutputPub;
   private final DoublePublisher m_velocityPub;
   private final DoublePublisher m_positionPub;
 
   /** Creates a new TurretSubsystem. */
-  public TurretSubsystem() {    
-    m_turretEncoder = (SparkRelativeEncoder) m_turretMotor.getEncoder();          
+  public TurretSubsystem() {
+    m_turretEncoder = (SparkRelativeEncoder) m_turretMotor.getEncoder();
     m_turretController = m_turretMotor.getClosedLoopController();
     m_turretConfig = new SparkMaxConfig();
     m_turretConfig.idleMode(IdleMode.kBrake);
 
     m_turretConfig.closedLoop
-      .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-      .pid(kP, kI, kD);
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .pid(kP, kI, kD);
 
     m_turretMotor.configure(m_turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -74,18 +73,18 @@ public class TurretSubsystem extends SubsystemBase {
     targetDoubleTopic.publish().set(0);
     m_targetPositionSub = targetDoubleTopic.subscribe(0.0);
 
-      var kpTopic = datatable.getDoubleTopic("Turret Kp");
+    var kpTopic = datatable.getDoubleTopic("Turret Kp");
     kpTopic.publish().set(kP);
     m_kPSub = kpTopic.subscribe(kP);
-    
+
     var kiTopic = datatable.getDoubleTopic("Turret Ki");
     kiTopic.publish().set(kI);
     m_kISub = kiTopic.subscribe(kI);
-    
+
     var dTopic = datatable.getDoubleTopic("Turret D");
     dTopic.publish().set(kD);
     m_kDSub = dTopic.subscribe(kD);
-    
+
     var ffTopic = datatable.getDoubleTopic("Turret FF");
     ffTopic.publish().set(KFf);
     m_kFfSub = ffTopic.subscribe(KFf);
@@ -111,13 +110,14 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   int m_ticks = 0;
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
 
     m_ticks++;
     if (m_ticks % 15 != 5)
-        return;
+      return;
 
     m_positionPub.set(m_turretEncoder.getPosition());
     m_velocityPub.set(m_turretEncoder.getVelocity());
@@ -126,15 +126,15 @@ public class TurretSubsystem extends SubsystemBase {
     dashboardUpdate();
   }
 
-  public void stopTurret(){
+  public void stopTurret() {
     m_turretMotor.set(0);
   }
 
-  public void goToTargetAngle(double targetAngle){
+  public void goToTargetAngle(double targetAngle) {
     m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
   }
 
-  public void dashboardUpdate(){
+  public void dashboardUpdate() {
     if (m_updatePidSub.get()) {
       double kp = m_kPSub.get();
       double ki = m_kISub.get();

@@ -34,29 +34,30 @@ public class HopperSubsystem extends SubsystemBase {
   }
 
   int m_ticks = 0;
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
 
     m_ticks++;
     if (m_ticks % 19 != 17)
-        return;
+      return;
     dashboardUpdate();
   }
 
-  private void stopHopper(){
+  private void stopHopper() {
     m_HopperMotor.set(0);
   }
 
-  public Command stopHopperCommand(){
+  public Command stopHopperCommand() {
     return new InstantCommand(() -> stopHopper(), this);
   }
 
-  private void startHopper(){
-    m_HopperMotor.set(m_HopperSpeed);  
+  private void startHopper() {
+    m_HopperMotor.set(m_HopperSpeed);
   }
 
-  public Command startHopperCommand(){
+  public Command startHopperCommand() {
     return new InstantCommand(() -> startHopper(), this);
   }
 

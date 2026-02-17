@@ -17,7 +17,9 @@ public class TeleOpDriveCommand extends Command {
     private Supplier<Boolean> m_isTeleopEnabled;
 
     public TeleOpDriveCommand(DriveSubsystem driveSubsystem,
-            Supplier<Double> xJoystick, Supplier<Double> yJoystick, Supplier<Double> turnJoystick,
+            Supplier<Double> xJoystick,
+            Supplier<Double> yJoystick,
+            Supplier<Double> turnJoystick,
             Supplier<Boolean> isTeleopEnabled) {
         m_driveSubsystem = driveSubsystem;
 
@@ -36,7 +38,10 @@ public class TeleOpDriveCommand extends Command {
     @Override
     public void execute() {
         if (m_isTeleopEnabled.get())
-            m_driveSubsystem.drive(m_xJoystickSupplier.get(), m_yJoystickSupplier.get(), m_turnJoystickSupplier.get(),
+            m_driveSubsystem.drive(
+                    m_xJoystickSupplier.get(),
+                    m_yJoystickSupplier.get(),
+                    m_turnJoystickSupplier.get(),
                     true);
     }
 

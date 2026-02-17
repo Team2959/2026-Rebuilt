@@ -25,8 +25,10 @@ public class ShooterSubsytem extends SubsystemBase {
   private TalonFX m_bottomShooterWheel = new TalonFX(RobotMap.kBottomShooterWheelkraken);
   private Slot0Configs m_slot0Configs = new Slot0Configs();
 
+  // https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/VelocityClosedLoop/src/main/java/frc/robot/Robot.java
+
   private VelocityVoltage m_topVelocityVoltage;
-  private VelocityVoltage m_bottomVelocityVoltage;  
+  private VelocityVoltage m_bottomVelocityVoltage;
 
   private static final double kP = 0.0005;
   private static final double kI = 0.000001;
@@ -50,7 +52,6 @@ public class ShooterSubsytem extends SubsystemBase {
   private final DoublePublisher m_topAppliedOutputPublisher;
   private final DoublePublisher m_bottomAppliedOutputPublisher;
 
-
   /** Creates a new Shootersubsytem. */
   public ShooterSubsytem() {
     m_topVelocityVoltage = new VelocityVoltage(0);
@@ -67,12 +68,12 @@ public class ShooterSubsytem extends SubsystemBase {
     m_bottomShooterWheel.getConfigurator().apply(m_slot0Configs);
     m_bottomShooterWheel.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
     m_bottomShooterWheel.setNeutralMode(NeutralModeValue.Coast);
-    
+
     // get the subtable called "serveMod1"
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Shooter");
 
-    // PID topic 
+    // PID topic
     var kpTopic = datatable.getDoubleTopic("kP");
     kpTopic.publish().set(kP);
     m_kPSub = kpTopic.subscribe(kP);
@@ -89,7 +90,7 @@ public class ShooterSubsytem extends SubsystemBase {
     var topTopic = datatable.getDoubleTopic("Top Target Velocity");
     topTopic.publish().set(0);
     m_topTargetVelocitySub = topTopic.subscribe(0);
-    
+
     var bottomTopic = datatable.getDoubleTopic("Bottom Target Velocity");
     bottomTopic.publish().set(0);
     m_bottomTargetVelocitySub = bottomTopic.subscribe(0);
@@ -112,34 +113,37 @@ public class ShooterSubsytem extends SubsystemBase {
   }
 
   int m_ticks = 0;
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-  
+
     m_ticks++;
     if (m_ticks % 15 != 11)
-        return;
-  
+      return;
+
     dashboardUpdate();
   }
 
-  public void stopShooter(){
+  public void stopShooter() {
     m_topShooterWheel.set(0);
     m_bottomShooterWheel.set(0);
   }
 
-  public void setVelocityfromDistance(double distance){
-    // converts distance to velocity for accuracy 
+  public void setVelocityfromDistance(double distance) {
+    // converts distance to velocity for accuracy
     // command each motor to control to the desired velocity
     setVelocity(0, 0);
   }
 
-  private void setVelocity(double top, double bottom){
+  private void setVelocity(double top, double bottom) {
     m_topShooterWheel.setControl(m_topVelocityVoltage.withVelocity(top));
     m_bottomShooterWheel.setControl(m_bottomVelocityVoltage.withVelocity(bottom));
-  }
 
-  private void dashboardUpdate(){
+    // m_topShooterWheel.setControl(m_positionTorque.withPosition(top));
+}
+
+  private void dashboardUpdate() {
     // m_topAppliedOutputPublisher.set(m_topShooterWheel;
 
     m_topVelocityPub.set(m_topShooterWheel.getVelocity().getValueAsDouble());
@@ -161,7 +165,7 @@ public class ShooterSubsytem extends SubsystemBase {
     }
 
     if (m_goToTargetSub.get()) {
-      setVelocity(m_topTargetVelocitySub.get(), m_bottomTargetVelocitySub.get() );
+      setVelocity(m_topTargetVelocitySub.get(), m_bottomTargetVelocitySub.get());
 
       m_goToTargetPub.set(false);
     }

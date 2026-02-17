@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -18,10 +19,9 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
-import frc.robot.subsystems.ClimbRotateSubsystem.RotatePositionType;
 
 public class ClimbExtendSubsystem extends SubsystemBase {
-  public enum ExtendPositionType{
+  public enum ExtendPositionType {
     Starting,
     LevelOnePrep,
     LevelOneEngage,
@@ -34,7 +34,12 @@ public class ClimbExtendSubsystem extends SubsystemBase {
   private TalonFX m_extendMotor = new TalonFX(RobotMap.kBottomShooterWheelkraken);
   private Slot0Configs m_extendConfig = new Slot0Configs();
 
-  private PositionVoltage m_extendPositionVoltage;  
+  // https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/PositionClosedLoop/src/main/java/frc/robot/Robot.java
+  
+  private PositionVoltage m_extendPositionVoltage;
+  // private final PositionTorqueCurrentFOC m_positionTorque = new PositionTorqueCurrentFOC(0).withSlot(1);
+  /* Keep a brake request so we can disable the motor */
+  private final NeutralOut m_brake = new NeutralOut();
 
   private static final double extendKp = 0.01;
   private static final double extendKi = 0.0;
@@ -51,12 +56,11 @@ public class ClimbExtendSubsystem extends SubsystemBase {
   private final BooleanSubscriber m_updatePidSub;
   private final BooleanPublisher m_updatePidPub;
 
-  private final DoublePublisher m_ExtendAppliedOutputPublisher;
-
+  private final DoublePublisher m_extendDutyCyclePub;
 
   /** Creates a new Shootersubsytem. */
   public ClimbExtendSubsystem() {
-     m_extendPositionVoltage = new PositionVoltage(0);
+    m_extendPositionVoltage = new PositionVoltage(0);
 
     m_extendConfig.kS = 0.05; // Add 0.05 V output to overcome static friction
     m_extendConfig.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
@@ -66,14 +70,12 @@ public class ClimbExtendSubsystem extends SubsystemBase {
     m_extendMotor.getConfigurator().apply(m_extendConfig);
     m_extendMotor.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
     m_extendMotor.setNeutralMode(NeutralModeValue.Coast);
-    
+
     // get the subtable called "serveMod1"
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Climb");
 
-    // PID topic     
-
-    // PID topic 
+    // PID topic
     var kpTopic = datatable.getDoubleTopic("kP");
     kpTopic.publish().set(extendKp);
     m_kPSub = kpTopic.subscribe(extendKp);
@@ -100,26 +102,27 @@ public class ClimbExtendSubsystem extends SubsystemBase {
     m_updatePidPub.set(false);
     m_updatePidSub = updatePID.subscribe(false);
 
-    m_ExtendAppliedOutputPublisher = datatable.getDoubleTopic("Extend Applied Output").publish();
+    m_extendDutyCyclePub = datatable.getDoubleTopic("Extend Duty Cycle").publish();
   }
 
   int m_ticks = 0;
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-  
+
     m_ticks++;
     if (m_ticks % 15 != 13)
-        return;
-  
+      return;
+
     dashboardUpdate();
   }
 
-  public void stopShooter(){
-    m_extendMotor.set(0);
+  public void stopShooter() {
+    m_extendMotor.setControl(m_brake);
   }
 
-  private double positionTypeToValue(ExtendPositionType position){
+  private double positionTypeToValue(ExtendPositionType position) {
     switch (position) {
       case LevelOnePrep:
         return 10;
@@ -137,47 +140,45 @@ public class ClimbExtendSubsystem extends SubsystemBase {
       default:
         // will keep target at 0
         return 0;
-      }
+    }
   }
 
-  public void setExtendPosition(ExtendPositionType position){
+  public void setExtendPosition(ExtendPositionType position) {
     setExtendPosition(positionTypeToValue(position));
   }
 
-  private void setExtendPosition(double position){
+  private void setExtendPosition(double position) {
     m_extendMotor.setControl(m_extendPositionVoltage.withPosition(position));
+    // m_extendMotor.setControl(m_positionTorque.withPosition(position));
   }
 
-  public void holdAtCurrentPosition(){
+  public void holdAtCurrentPosition() {
     setExtendPosition(getCurrentPosition());
   }
 
-  public boolean isAtTargetPosition(ExtendPositionType target){
+  public boolean isAtTargetPosition(ExtendPositionType target) {
     return Math.abs(getCurrentPosition() - positionTypeToValue(target)) < 1;
   }
 
-  private double getCurrentPosition()
-  {
+  private double getCurrentPosition() {
     return m_extendMotor.getPosition().getValueAsDouble();
   }
 
-  private void dashboardUpdate(){
-    // m_topAppliedOutputPublisher.set(m_topShooterWheel;
-
-    // m_bottomVelocityPub.set(m_extendRetractMotor.getVelocity().getValueAsDouble());
+  private void dashboardUpdate() {
+    m_extendPositionPub.set(getCurrentPosition());
+    m_extendDutyCyclePub.set(m_extendMotor.getDutyCycle().getValueAsDouble());
 
     if (m_updatePidSub.get()) {
-      double kp = m_kPSub.get();
-      double ki = m_kISub.get();
-      double kd = m_kDSub.get();
-
+      m_extendConfig.kP = m_kPSub.get();
+      m_extendConfig.kI = m_kISub.get();
+      m_extendConfig.kD = m_kDSub.get();
       m_extendMotor.getConfigurator().apply(m_extendConfig);
 
       m_updatePidPub.set(false);
     }
 
     if (m_goToTargetSub.get()) {
-      setExtendPosition( m_extendTargetSub.get() );
+      setExtendPosition(m_extendTargetSub.get());
 
       m_goToTargetPub.set(false);
     }

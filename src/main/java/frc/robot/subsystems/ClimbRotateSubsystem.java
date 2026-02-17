@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -30,6 +31,9 @@ public class ClimbRotateSubsystem extends SubsystemBase {
   private Slot0Configs m_rotateConfig = new Slot0Configs();
 
   private PositionVoltage m_rotatePositionVoltage;
+  // private final PositionTorqueCurrentFOC m_positionTorque = new PositionTorqueCurrentFOC(0).withSlot(1);
+  /* Keep a brake request so we can disable the motor */
+  private final NeutralOut m_brake = new NeutralOut();
 
   private static final double rotateKp = 0.01;
   private static final double rotateKi = 0.0;
@@ -46,7 +50,7 @@ public class ClimbRotateSubsystem extends SubsystemBase {
   private final BooleanSubscriber m_updatePidSub;
   private final BooleanPublisher m_updatePidPub;
 
-  private final DoublePublisher m_RotateAppliedOutputPublisher;
+  private final DoublePublisher m_rotateDutyCyclePub;
 
   /** Creates a new Shootersubsytem. */
   public ClimbRotateSubsystem() {
@@ -92,7 +96,7 @@ public class ClimbRotateSubsystem extends SubsystemBase {
     m_updatePidPub.set(false);
     m_updatePidSub = updatePID.subscribe(false);
 
-    m_RotateAppliedOutputPublisher = datatable.getDoubleTopic("Rotate Applied Output").publish();
+    m_rotateDutyCyclePub = datatable.getDoubleTopic("Rotate Duty Cycle").publish();
   }
 
   int m_ticks = 0;
@@ -108,7 +112,7 @@ public class ClimbRotateSubsystem extends SubsystemBase {
   }
 
   public void stopClimb(){
-    m_rotateMotor.set(0);
+    m_rotateMotor.setControl(m_brake);
   }
 
   private double positionTypeToValue(RotatePositionType position){
@@ -130,6 +134,7 @@ public class ClimbRotateSubsystem extends SubsystemBase {
 
   private void setRotatePosition(double position){
     m_rotateMotor.setControl(m_rotatePositionVoltage.withPosition(position));
+    // m_rotateMotor.setControl(m_positionTorque.withPosition(position));
   }
 
   public void holdAtCurrentPosition(){
@@ -146,7 +151,7 @@ public class ClimbRotateSubsystem extends SubsystemBase {
   }
 
   private void dashboardUpdate(){
-    // m_topAppliedOutputPublisher.set(m_topShooterWheel;
+    m_rotateDutyCyclePub.set(m_rotateMotor.getDutyCycle().getValueAsDouble());
 
     m_rotatePositionPub.set(getCurrentPosition());
 
