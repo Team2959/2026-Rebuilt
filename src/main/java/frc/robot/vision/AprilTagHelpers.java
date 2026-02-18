@@ -15,7 +15,9 @@ public class AprilTagHelpers {
     public static double distanceToHub() {
         var pose3d = alliancePose();
 
-        // calculate distance from robot to hub
+        // calculate distance from robot to hub, from spreadsheet calcs
+        // B14 = DeltaX
+        // B15 = DeltaY
         // =SQRT(B14*B14+B15*B15)
         var deltaX = deltaXToHub(pose3d);
         var deltaY = deltaYToHub(pose3d);
@@ -26,6 +28,7 @@ public class AprilTagHelpers {
     public static double turretAngleToHub(double currentRobotRotation) {
         var pose3d = alliancePose();
 
+        // calculate target turret angle to hub, from spreadsheet calcs
         // B14 = DeltaX
         // B15 = DeltaY
         // =IF(B14 = 0, 0, ATAN(B15/B14))
