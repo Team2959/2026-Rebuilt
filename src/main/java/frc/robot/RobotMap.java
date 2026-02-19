@@ -16,16 +16,16 @@ public final class RobotMap {
 
     // CAN motor addresses
         // SparkMax
-    public static final int kFeederMotorSparkMax = 31;
-    public static final int kIntakeMotorSparkMax = 32;
-    public static final int KIntakeExtendMotorSparkMax = 36;
-    public static final int kTurretMotorSparkMax = 33;
-    public static final int kHopperMotorSparkMax = 37;
+    public static final int kIntakeMotorSparkMax = 31;
+    public static final int KIntakeExtendMotorSparkMax = 32;
+    public static final int kHopperMotorSparkMax = 33;
+    public static final int kFeederMotorSparkMax = 34;
+    public static final int kTurretMotorSparkMax = 35;
         // Kraken
     public static final int kTopShooterWheelkraken = 21;
     public static final int kBottomShooterWheelkraken = 22;
-    public static final int kRotateMotorkraken = 34;
-    public static final int kExtendMotorkraken = 35;
+    public static final int kExtendMotorkraken = 25;
+    public static final int kRotateMotorkraken = 26;
 
     // Analog Input addresses
     public static final int kFrontLeftAnalogInput = 2; 
