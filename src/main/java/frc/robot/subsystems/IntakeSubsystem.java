@@ -19,6 +19,7 @@ import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -49,7 +50,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private static final int defaultExtendedPosition = 50;
 
-  private static final int kExtendCurrentLimitAmps = 40;
+  private static final int kExtendCurrentLimitAmps = 20;
+  private static final double kExtendMaxOutput = 0.5;
   private static final double extendKp = 0.01;
   private static final double extendKi = 0.0;
   private static final double extendKd = 0.0;
@@ -57,6 +59,8 @@ public class IntakeSubsystem extends SubsystemBase {
   private final DoubleSubscriber m_kPSub;
   private final DoubleSubscriber m_kISub;
   private final DoubleSubscriber m_kDSub;
+  private final IntegerSubscriber m_currentLimitSub;
+  private final DoubleSubscriber m_maxOutputSub;
   private final DoubleSubscriber m_extendTargetSub;
   private final DoublePublisher m_extendPositionPub;
 
@@ -79,7 +83,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     m_extendConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .pid(extendKp, extendKi, extendKd);
+        .pid(extendKp, extendKi, extendKd)
+        .outputRange(-kExtendMaxOutput, kExtendMaxOutput);
 
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Intake");
@@ -106,6 +111,14 @@ public class IntakeSubsystem extends SubsystemBase {
     var ExtendTargetTopic = datatable.getDoubleTopic("Extend Target");
     ExtendTargetTopic.publish().set(0);
     m_extendTargetSub = ExtendTargetTopic.subscribe(0);
+
+    var currentLimitTopic = datatable.getIntegerTopic("Current Limit");
+    currentLimitTopic.publish().set(kExtendCurrentLimitAmps);
+    m_currentLimitSub = currentLimitTopic.subscribe(kExtendCurrentLimitAmps);
+
+    var maxOutputTopic = datatable.getDoubleTopic("Max Output");
+    maxOutputTopic.publish().set(kExtendMaxOutput);
+    m_maxOutputSub = maxOutputTopic.subscribe(kExtendMaxOutput);
 
     m_extendPositionPub = datatable.getDoubleTopic("Extend Position").publish();
 
@@ -155,7 +168,9 @@ public class IntakeSubsystem extends SubsystemBase {
     return new StartEndCommand(() -> startIntake(), () -> stopIntake(), this);
   }
 
-  private void setExtendPosition(double position){
+  private void setExtendPosition(double position) {
+    // currnently in units of rotations
+    // ToDo: may need to limit motor power
     m_extendController.setSetpoint(position, ControlType.kPosition);
   }
 
@@ -183,7 +198,11 @@ public class IntakeSubsystem extends SubsystemBase {
     m_extendAppliedOutputPub.set(m_extendIntakeMotor.getAppliedOutput());
 
     if (m_updatePidSub.get()) {
-      m_extendConfig.closedLoop.pid(m_kPSub.get(), m_kISub.get(), m_kDSub.get());
+      m_extendConfig.smartCurrentLimit((int) m_currentLimitSub.get());
+      var maxOutput = m_maxOutputSub.get();
+      m_extendConfig.closedLoop
+          .pid(m_kPSub.get(), m_kISub.get(), m_kDSub.get())
+          .outputRange(-maxOutput, maxOutput);
       m_extendIntakeMotor.configure(m_extendConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
       m_updatePidPub.set(false);
