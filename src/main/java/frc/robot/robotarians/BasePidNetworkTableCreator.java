@@ -4,6 +4,8 @@
 
 package frc.robot.robotarians;
 
+import java.util.function.Consumer;
+
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoublePublisher;
@@ -13,23 +15,23 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 /** Add your docs here. */
 public class BasePidNetworkTableCreator {
-    protected final DoubleSubscriber m_kPSub;
-    protected final DoubleSubscriber m_kISub;
-    protected final DoubleSubscriber m_kDSub;
-    protected final DoubleSubscriber m_kFfSub;
-    protected final BooleanSubscriber m_updatePidSub;
-    protected final BooleanPublisher m_updatePidPub;
+    private final DoubleSubscriber m_kPSub;
+    private final DoubleSubscriber m_kISub;
+    private final DoubleSubscriber m_kDSub;
+    private final BooleanSubscriber m_updatePidSub;
+    private final BooleanPublisher m_updatePidPub;
 
-    protected final DoubleSubscriber m_targetSub;
-    protected final BooleanSubscriber m_goToTargetSub;
-    protected final BooleanPublisher m_goToTargetPub;
+    private final DoubleSubscriber m_targetSub;
+    private final BooleanSubscriber m_goToTargetSub;
+    private final BooleanPublisher m_goToTargetPub;
 
     protected final DoublePublisher m_velocityPub;
     protected final DoublePublisher m_positionPub;
+    protected final DoublePublisher m_outputnPub;
 
-    protected final NetworkTable m_dataTable;
+    private final NetworkTable m_dataTable;
 
-    protected BasePidNetworkTableCreator(String tableName, double kP, double kI, double kD){
+    protected BasePidNetworkTableCreator(String tableName, String outputName, PidValuesRecord pidValues) {
         // get the subtable called "tablename"
         NetworkTableInstance inst = NetworkTableInstance.getDefault();
         var datatable = inst.getTable(tableName);
@@ -37,17 +39,14 @@ public class BasePidNetworkTableCreator {
 
         // PID topic
         var kpTopic = datatable.getDoubleTopic("kP");
-        kpTopic.publish().set(kP);
-        m_kPSub = kpTopic.subscribe(kP);
+        kpTopic.publish().set(pidValues.kP());
+        m_kPSub = kpTopic.subscribe(pidValues.kP());
         var kiTopic = datatable.getDoubleTopic("kI");
-        kiTopic.publish().set(kI);
-        m_kISub = kiTopic.subscribe(kI);
+        kiTopic.publish().set(pidValues.kI());
+        m_kISub = kiTopic.subscribe(pidValues.kI());
         var kDTopic = datatable.getDoubleTopic("kD");
-        kDTopic.publish().set(kD);
-        m_kDSub = kDTopic.subscribe(kD);
-        var ffTopic = datatable.getDoubleTopic("FF");
-        ffTopic.publish().set(0);
-        m_kFfSub = ffTopic.subscribe(0);
+        kDTopic.publish().set(pidValues.kD());
+        m_kDSub = kDTopic.subscribe(pidValues.kD());
 
         var topTopic = datatable.getDoubleTopic("Target");
         topTopic.publish().set(0);
@@ -65,5 +64,26 @@ public class BasePidNetworkTableCreator {
 
         m_velocityPub = datatable.getDoubleTopic("Velocity").publish();
         m_positionPub = datatable.getDoubleTopic("Position").publish();
+        m_outputnPub = datatable.getDoubleTopic(outputName).publish();
+    }
+
+    protected void TryReadPids(Consumer<PidValuesRecord> updatePidValues) {
+        if (m_updatePidSub.get()) {
+            updatePidValues.accept(new PidValuesRecord(m_kPSub.get(), m_kISub.get(), m_kDSub.get()));
+
+            m_updatePidPub.set(false);
+        }
+    }
+
+    protected void TryReadTarget(Consumer<Double> updateTarget) {
+        if (m_goToTargetSub.get()) {
+            updateTarget.accept(m_targetSub.get());
+
+            m_goToTargetPub.set(false);
+        }
+    }
+
+    public NetworkTable networkTable() {
+        return m_dataTable;
     }
 }

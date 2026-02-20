@@ -18,6 +18,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.NeoPidNetworkTableHelper;
+import frc.robot.robotarians.PidValuesRecord;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -26,12 +27,9 @@ public class TurretSubsystem extends SubsystemBase {
   private SparkClosedLoopController m_turretController;
   private final SparkMaxConfig m_turretConfig;
 
-  private static final double kP = 0.0005;
-  private static final double kI = 0.000001;
-  private static final double kD = 0.0;
-  private static final double KFf = 0.0;
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.0005, 0.000001, 0);
 
-  private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", kP, kI, kD);
+  private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
 
   /** Creates a new TurretSubsystem. */
   public TurretSubsystem() {
@@ -42,7 +40,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     m_turretConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .pid(kP, kI, kD);
+        .pid(pidValues.kP(), pidValues.kI(), pidValues.kD());
 
     m_turretMotor.configure(m_turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
@@ -57,7 +55,7 @@ public class TurretSubsystem extends SubsystemBase {
     if (m_ticks % 15 != 5)
       return;
 
-    m_networkTable.dashboardUpdate(m_turretMotor, m_turretEncoder, m_turretConfig, (t) -> goToTargetAngle(t));
+    m_networkTable.dashboardUpdate(m_turretMotor, m_turretEncoder, m_turretConfig, (t) -> goToTargetAngle(t), (b) -> {});
   }
 
   public void stopTurret() {

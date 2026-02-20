@@ -11,14 +11,10 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
+import frc.robot.robotarians.KrakenPidNetworkTableHelper;
+import frc.robot.robotarians.PidValuesRecord;
 
 public class ClimbRotateSubsystem extends SubsystemBase {
   public enum RotatePositionType{
@@ -35,22 +31,9 @@ public class ClimbRotateSubsystem extends SubsystemBase {
   /* Keep a brake request so we can disable the motor */
   private final NeutralOut m_brake = new NeutralOut();
 
-  private static final double rotateKp = 0.01;
-  private static final double rotateKi = 0.0;
-  private static final double rotateKd = 0.0;
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.01, 0, 0);
 
-  private final DoubleSubscriber m_kPSub;
-  private final DoubleSubscriber m_kISub;
-  private final DoubleSubscriber m_kDSub;
-  private final BooleanSubscriber m_goToTargetSub;
-  private final BooleanPublisher m_goToTargetPub;
-
-  private final DoubleSubscriber m_rotateTargetSub;
-  private final BooleanSubscriber m_updatePidSub;
-  private final BooleanPublisher m_updatePidPub;
-
-  private final DoublePublisher m_rotatePositionPub;
-  private final DoublePublisher m_rotateDutyCyclePub;
+  private final KrakenPidNetworkTableHelper m_networkTable = new KrakenPidNetworkTableHelper("Climb Rotate", pidValues);
 
   /** Creates a new Shootersubsytem. */
   public ClimbRotateSubsystem() {
@@ -58,45 +41,12 @@ public class ClimbRotateSubsystem extends SubsystemBase {
 
     m_rotateConfig.kS = 0.05; // Add 0.05 V output to overcome static friction
     m_rotateConfig.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
-    m_rotateConfig.kP = rotateKp; // An error of 1 rps results in 0.05 V output
-    m_rotateConfig.kI = rotateKi; // no output for integrated error
-    m_rotateConfig.kD = rotateKd; // no output for error derivative
+    m_rotateConfig.kP = pidValues.kP(); // An error of 1 rps results in 0.05 V output
+    m_rotateConfig.kI = pidValues.kI(); // no output for integrated error
+    m_rotateConfig.kD = pidValues.kD(); // no output for error derivative
     m_rotateMotor.getConfigurator().apply(m_rotateConfig);
     m_rotateMotor.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
     m_rotateMotor.setNeutralMode(NeutralModeValue.Brake);
-    
-    // get the subtable called "serveMod1"
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    NetworkTable datatable = inst.getTable("Climb Rotate");
-
-    // PID topic 
-    var kpTopic = datatable.getDoubleTopic("kP");
-    kpTopic.publish().set(rotateKp);
-    m_kPSub = kpTopic.subscribe(rotateKp);
-    var kiTopic = datatable.getDoubleTopic("kI");
-    kiTopic.publish().set(rotateKi);
-    m_kISub = kiTopic.subscribe(rotateKi);
-    var kDTopic = datatable.getDoubleTopic("kD");
-    kDTopic.publish().set(rotateKd);
-    m_kDSub = kDTopic.subscribe(rotateKd);
-
-    var rotateTargetTopic = datatable.getDoubleTopic("Rotate Target");
-    rotateTargetTopic.publish().set(0);
-    m_rotateTargetSub = rotateTargetTopic.subscribe(0);
-    
-    m_rotatePositionPub = datatable.getDoubleTopic("Rotate Position").publish();
-
-    var goToTarget = datatable.getBooleanTopic("go to Target");
-    m_goToTargetPub = goToTarget.publish();
-    m_goToTargetPub.set(false);
-    m_goToTargetSub = goToTarget.subscribe(false);
-
-    var updatePID = datatable.getBooleanTopic("update PID");
-    m_updatePidPub = updatePID.publish();
-    m_updatePidPub.set(false);
-    m_updatePidSub = updatePID.subscribe(false);
-
-    m_rotateDutyCyclePub = datatable.getDoubleTopic("Rotate Duty Cycle").publish();
   }
 
   int m_ticks = 0;
@@ -108,7 +58,7 @@ public class ClimbRotateSubsystem extends SubsystemBase {
     if (m_ticks % 15 != 2)
         return;
   
-    dashboardUpdate();
+    m_networkTable.dashboardUpdate(m_rotateMotor, m_rotateConfig, (t) -> setRotatePosition(t), (b) -> {});
   }
 
   public void stopClimb(){
@@ -149,31 +99,5 @@ public class ClimbRotateSubsystem extends SubsystemBase {
   private double getCurrentPosition()
   {
     return m_rotateMotor.getPosition().getValueAsDouble();
-  }
-
-  private void dashboardUpdate(){
-    m_rotateDutyCyclePub.set(m_rotateMotor.getDutyCycle().getValueAsDouble());
-
-    m_rotatePositionPub.set(getCurrentPosition());
-
-    if (m_updatePidSub.get()) {
-      double kp = m_kPSub.get();
-      double ki = m_kISub.get();
-      double kd = m_kDSub.get();
-
-      m_rotateConfig.kP = kp;
-      m_rotateConfig.kI = ki;
-      m_rotateConfig.kD = kd;
-
-      m_rotateMotor.getConfigurator().apply(m_rotateConfig);
-
-      m_updatePidPub.set(false);
-    }
-
-    if (m_goToTargetSub.get()) {
-      setRotatePosition(m_rotateTargetSub.get());
-
-      m_goToTargetPub.set(false);
-    }
   }
 }
