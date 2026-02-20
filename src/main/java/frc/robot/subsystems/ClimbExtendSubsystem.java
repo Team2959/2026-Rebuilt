@@ -69,7 +69,7 @@ public class ClimbExtendSubsystem extends SubsystemBase {
     m_extendConfig.kD = extendKd; // no output for error derivative
     m_extendMotor.getConfigurator().apply(m_extendConfig);
     m_extendMotor.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
-    m_extendMotor.setNeutralMode(NeutralModeValue.Coast);
+    m_extendMotor.setNeutralMode(NeutralModeValue.Brake);
 
     // get the subtable called "serveMod1"
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -90,8 +90,6 @@ public class ClimbExtendSubsystem extends SubsystemBase {
     extendTargetTopic.publish().set(0);
     m_extendTargetSub = extendTargetTopic.subscribe(0);
 
-    m_extendPositionPub = datatable.getDoubleTopic("Extend Position").publish();
-
     var goToTarget = datatable.getBooleanTopic("go to Target");
     m_goToTargetPub = goToTarget.publish();
     m_goToTargetPub.set(false);
@@ -102,6 +100,7 @@ public class ClimbExtendSubsystem extends SubsystemBase {
     m_updatePidPub.set(false);
     m_updatePidSub = updatePID.subscribe(false);
 
+    m_extendPositionPub = datatable.getDoubleTopic("Extend Position").publish();
     m_extendDutyCyclePub = datatable.getDoubleTopic("Extend Duty Cycle").publish();
   }
 
@@ -123,6 +122,7 @@ public class ClimbExtendSubsystem extends SubsystemBase {
   }
 
   private double positionTypeToValue(ExtendPositionType position) {
+    // in units of rotations
     switch (position) {
       case LevelOnePrep:
         return 10;

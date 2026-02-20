@@ -42,14 +42,14 @@ public class ClimbRotateSubsystem extends SubsystemBase {
   private final DoubleSubscriber m_kPSub;
   private final DoubleSubscriber m_kISub;
   private final DoubleSubscriber m_kDSub;
-  private final DoubleSubscriber m_rotateTargetSub;
-  private final DoublePublisher m_rotatePositionPub;
-
   private final BooleanSubscriber m_goToTargetSub;
   private final BooleanPublisher m_goToTargetPub;
+
+  private final DoubleSubscriber m_rotateTargetSub;
   private final BooleanSubscriber m_updatePidSub;
   private final BooleanPublisher m_updatePidPub;
 
+  private final DoublePublisher m_rotatePositionPub;
   private final DoublePublisher m_rotateDutyCyclePub;
 
   /** Creates a new Shootersubsytem. */
@@ -63,7 +63,7 @@ public class ClimbRotateSubsystem extends SubsystemBase {
     m_rotateConfig.kD = rotateKd; // no output for error derivative
     m_rotateMotor.getConfigurator().apply(m_rotateConfig);
     m_rotateMotor.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
-    m_rotateMotor.setNeutralMode(NeutralModeValue.Coast);
+    m_rotateMotor.setNeutralMode(NeutralModeValue.Brake);
     
     // get the subtable called "serveMod1"
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -116,6 +116,7 @@ public class ClimbRotateSubsystem extends SubsystemBase {
   }
 
   private double positionTypeToValue(RotatePositionType position){
+    // units of rotations
     switch (position) {
       case Tower:
         return 10;

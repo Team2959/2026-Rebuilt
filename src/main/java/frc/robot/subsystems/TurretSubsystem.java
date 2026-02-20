@@ -131,6 +131,9 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public void goToTargetAngle(double targetAngle) {
+    // currently using rotations
+    // ToDo: limit input to min/max allowed angles, if out of range, don't change the target
+    // ToDo: change to using degrees as the input, have a conversion from degrees to position
     m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
   }
 

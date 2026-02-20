@@ -12,6 +12,7 @@ public class AprilTagHelpers {
     private final static double hubX = 4.636;
     private final static double hubY = 4.0;
 
+    // see spreadsheet calculations: https://docs.google.com/spreadsheets/d/1LeHMqRkg8qOJIvRW7yfcDIsMGJCiFuTLF8awAVgnMac/edit?usp=sharing
     public static double distanceToHub() {
         var pose3d = alliancePose();
 

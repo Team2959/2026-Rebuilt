@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -26,6 +27,8 @@ public class ShooterSubsytem extends SubsystemBase {
   private Slot0Configs m_slot0Configs = new Slot0Configs();
 
   // https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/VelocityClosedLoop/src/main/java/frc/robot/Robot.java
+  /* Keep a brake request so we can disable the motor */
+  private final NeutralOut m_brake = new NeutralOut();
 
   private VelocityVoltage m_topVelocityVoltage;
   private VelocityVoltage m_bottomVelocityVoltage;
@@ -126,17 +129,18 @@ public class ShooterSubsytem extends SubsystemBase {
   }
 
   public void stopShooter() {
-    m_topShooterWheel.set(0);
-    m_bottomShooterWheel.set(0);
+    m_topShooterWheel.setControl(m_brake);
+    m_bottomShooterWheel.setControl(m_brake);
   }
 
   public void setVelocityfromDistance(double distance) {
-    // converts distance to velocity for accuracy
+    // ToDo: converts distance to velocity for accuracy
     // command each motor to control to the desired velocity
     setVelocity(0, 0);
   }
 
   private void setVelocity(double top, double bottom) {
+    // current units are rotations per second
     m_topShooterWheel.setControl(m_topVelocityVoltage.withVelocity(top));
     m_bottomShooterWheel.setControl(m_bottomVelocityVoltage.withVelocity(bottom));
 
