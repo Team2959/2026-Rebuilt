@@ -11,14 +11,10 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
+import frc.robot.robotarians.KrakenPidNetworkTableHelper;
+import frc.robot.robotarians.PidValuesRecord;
 
 public class ClimbExtendSubsystem extends SubsystemBase {
   public enum ExtendPositionType {
@@ -35,28 +31,16 @@ public class ClimbExtendSubsystem extends SubsystemBase {
   private Slot0Configs m_extendConfig = new Slot0Configs();
 
   // https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/PositionClosedLoop/src/main/java/frc/robot/Robot.java
-  
+
   private PositionVoltage m_extendPositionVoltage;
-  // private final PositionTorqueCurrentFOC m_positionTorque = new PositionTorqueCurrentFOC(0).withSlot(1);
+  // private final PositionTorqueCurrentFOC m_positionTorque = new
+  // PositionTorqueCurrentFOC(0).withSlot(1);
   /* Keep a brake request so we can disable the motor */
   private final NeutralOut m_brake = new NeutralOut();
 
-  private static final double extendKp = 0.01;
-  private static final double extendKi = 0.0;
-  private static final double extendKd = 0.0;
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.01, 0, 0);
 
-  private final DoubleSubscriber m_kPSub;
-  private final DoubleSubscriber m_kISub;
-  private final DoubleSubscriber m_kDSub;
-  private final DoubleSubscriber m_extendTargetSub;
-  private final DoublePublisher m_extendPositionPub;
-
-  private final BooleanSubscriber m_goToTargetSub;
-  private final BooleanPublisher m_goToTargetPub;
-  private final BooleanSubscriber m_updatePidSub;
-  private final BooleanPublisher m_updatePidPub;
-
-  private final DoublePublisher m_extendDutyCyclePub;
+  private final KrakenPidNetworkTableHelper m_networkTable = new KrakenPidNetworkTableHelper("Climb Extend", pidValues);
 
   /** Creates a new Shootersubsytem. */
   public ClimbExtendSubsystem() {
@@ -64,44 +48,12 @@ public class ClimbExtendSubsystem extends SubsystemBase {
 
     m_extendConfig.kS = 0.05; // Add 0.05 V output to overcome static friction
     m_extendConfig.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
-    m_extendConfig.kP = extendKp; // An error of 1 rps results in 0.05 V output
-    m_extendConfig.kI = extendKi; // no output for integrated error
-    m_extendConfig.kD = extendKd; // no output for error derivative
+    m_extendConfig.kP = pidValues.kP(); // An error of 1 rps results in 0.05 V output
+    m_extendConfig.kI = pidValues.kI(); // no output for integrated error
+    m_extendConfig.kD = pidValues.kD(); // no output for error derivative
     m_extendMotor.getConfigurator().apply(m_extendConfig);
     m_extendMotor.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
     m_extendMotor.setNeutralMode(NeutralModeValue.Brake);
-
-    // get the subtable called "serveMod1"
-    NetworkTableInstance inst = NetworkTableInstance.getDefault();
-    NetworkTable datatable = inst.getTable("Climb");
-
-    // PID topic
-    var kpTopic = datatable.getDoubleTopic("kP");
-    kpTopic.publish().set(extendKp);
-    m_kPSub = kpTopic.subscribe(extendKp);
-    var kiTopic = datatable.getDoubleTopic("kI");
-    kiTopic.publish().set(extendKi);
-    m_kISub = kiTopic.subscribe(extendKi);
-    var kDTopic = datatable.getDoubleTopic("kD");
-    kDTopic.publish().set(extendKd);
-    m_kDSub = kDTopic.subscribe(extendKd);
-
-    var extendTargetTopic = datatable.getDoubleTopic("Extend Target");
-    extendTargetTopic.publish().set(0);
-    m_extendTargetSub = extendTargetTopic.subscribe(0);
-
-    var goToTarget = datatable.getBooleanTopic("go to Target");
-    m_goToTargetPub = goToTarget.publish();
-    m_goToTargetPub.set(false);
-    m_goToTargetSub = goToTarget.subscribe(false);
-
-    var updatePID = datatable.getBooleanTopic("update PID");
-    m_updatePidPub = updatePID.publish();
-    m_updatePidPub.set(false);
-    m_updatePidSub = updatePID.subscribe(false);
-
-    m_extendPositionPub = datatable.getDoubleTopic("Extend Position").publish();
-    m_extendDutyCyclePub = datatable.getDoubleTopic("Extend Duty Cycle").publish();
   }
 
   int m_ticks = 0;
@@ -114,7 +66,7 @@ public class ClimbExtendSubsystem extends SubsystemBase {
     if (m_ticks % 15 != 13)
       return;
 
-    dashboardUpdate();
+    m_networkTable.dashboardUpdate(m_extendMotor, m_extendConfig, (t) -> setExtendPosition(t), (b) -> {});
   }
 
   public void stopShooter() {
@@ -162,25 +114,5 @@ public class ClimbExtendSubsystem extends SubsystemBase {
 
   private double getCurrentPosition() {
     return m_extendMotor.getPosition().getValueAsDouble();
-  }
-
-  private void dashboardUpdate() {
-    m_extendPositionPub.set(getCurrentPosition());
-    m_extendDutyCyclePub.set(m_extendMotor.getDutyCycle().getValueAsDouble());
-
-    if (m_updatePidSub.get()) {
-      m_extendConfig.kP = m_kPSub.get();
-      m_extendConfig.kI = m_kISub.get();
-      m_extendConfig.kD = m_kDSub.get();
-      m_extendMotor.getConfigurator().apply(m_extendConfig);
-
-      m_updatePidPub.set(false);
-    }
-
-    if (m_goToTargetSub.get()) {
-      setExtendPosition(m_extendTargetSub.get());
-
-      m_goToTargetPub.set(false);
-    }
   }
 }

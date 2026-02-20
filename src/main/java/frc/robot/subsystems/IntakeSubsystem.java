@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.NeoPidNetworkTableHelper;
+import frc.robot.robotarians.PidValuesRecord;
 
 public class IntakeSubsystem extends SubsystemBase {
   public enum ExtendIntakePositionType {
@@ -51,12 +52,9 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private static final int kExtendCurrentLimitAmps = 20;
   private static final double kExtendMaxOutput = 0.5;
-  private static final double extendKp = 0.01;
-  private static final double extendKi = 0.0;
-  private static final double extendKd = 0.0;
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.01, 0.0, 0);
 
-  private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Intake Extend", extendKp,
-      extendKi, extendKd);
+  private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Intake Extend", pidValues);
   private final IntegerSubscriber m_currentLimitSub;
   private final DoubleSubscriber m_maxOutputSub;
 
@@ -73,7 +71,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     // m_extendConfig.closedLoop
     // .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-    // .pid(extendKp, extendKi, extendKd)
+    // .pid(pidValues.kP(), pidValues.kI(), pidValues.kD())
     // .outputRange(-kExtendMaxOutput, kExtendMaxOutput);
 
     NetworkTableInstance inst = NetworkTableInstance.getDefault();

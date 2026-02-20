@@ -15,9 +15,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 /** Add your docs here. */
 public class BasePidNetworkTableCreator {
-    public record PidValues(double kP, double kI, double kD) {
-    }
-
     private final DoubleSubscriber m_kPSub;
     private final DoubleSubscriber m_kISub;
     private final DoubleSubscriber m_kDSub;
@@ -35,7 +32,7 @@ public class BasePidNetworkTableCreator {
 
     private final NetworkTable m_dataTable;
 
-    protected BasePidNetworkTableCreator(String tableName, String outputName, double kP, double kI, double kD) {
+    protected BasePidNetworkTableCreator(String tableName, String outputName, PidValuesRecord pidValues) {
         // get the subtable called "tablename"
         NetworkTableInstance inst = NetworkTableInstance.getDefault();
         var datatable = inst.getTable(tableName);
@@ -43,14 +40,14 @@ public class BasePidNetworkTableCreator {
 
         // PID topic
         var kpTopic = datatable.getDoubleTopic("kP");
-        kpTopic.publish().set(kP);
-        m_kPSub = kpTopic.subscribe(kP);
+        kpTopic.publish().set(pidValues.kP());
+        m_kPSub = kpTopic.subscribe(pidValues.kP());
         var kiTopic = datatable.getDoubleTopic("kI");
-        kiTopic.publish().set(kI);
-        m_kISub = kiTopic.subscribe(kI);
+        kiTopic.publish().set(pidValues.kI());
+        m_kISub = kiTopic.subscribe(pidValues.kI());
         var kDTopic = datatable.getDoubleTopic("kD");
-        kDTopic.publish().set(kD);
-        m_kDSub = kDTopic.subscribe(kD);
+        kDTopic.publish().set(pidValues.kD());
+        m_kDSub = kDTopic.subscribe(pidValues.kD());
         var ffTopic = datatable.getDoubleTopic("FF");
         ffTopic.publish().set(0);
         m_kFfSub = ffTopic.subscribe(0);
@@ -74,9 +71,9 @@ public class BasePidNetworkTableCreator {
         m_outputnPub = datatable.getDoubleTopic(outputName).publish();
     }
 
-    protected void TryReadPids(Consumer<PidValues> updatePidValues) {
+    protected void TryReadPids(Consumer<PidValuesRecord> updatePidValues) {
         if (m_updatePidSub.get()) {
-            updatePidValues.accept(new PidValues(m_kPSub.get(), m_kISub.get(), m_kDSub.get()));
+            updatePidValues.accept(new PidValuesRecord(m_kPSub.get(), m_kISub.get(), m_kDSub.get()));
 
             m_updatePidPub.set(false);
         }

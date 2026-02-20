@@ -15,9 +15,8 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 /** Add your docs here. */
 public class NeoPidNetworkTableHelper extends BasePidNetworkTableCreator {
 
-    public NeoPidNetworkTableHelper(String tableName,
-            double kP, double kI, double kD) {
-        super(tableName, "Applied Output", kP, kI, kD);
+    public NeoPidNetworkTableHelper(String tableName, PidValuesRecord pidValues) {
+        super(tableName, "Applied Output", pidValues);
     }
 
     public void dashboardUpdate(
@@ -31,9 +30,9 @@ public class NeoPidNetworkTableHelper extends BasePidNetworkTableCreator {
         m_outputnPub.set(motor.getAppliedOutput());
 
         TryReadPids((values) -> {
-            extraPidUpdate.accept(true);
             config.closedLoop
                     .pid(values.kP(), values.kI(), values.kD());
+            extraPidUpdate.accept(true);
             motor.configure(config, ResetMode.kNoResetSafeParameters,
                     PersistMode.kNoPersistParameters);
         });
