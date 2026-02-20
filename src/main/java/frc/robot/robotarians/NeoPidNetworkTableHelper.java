@@ -12,40 +12,32 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
-import edu.wpi.first.networktables.DoublePublisher;
-
 /** Add your docs here. */
 public class NeoPidNetworkTableHelper extends BasePidNetworkTableCreator {
-    private final DoublePublisher m_appliedOutputPublisher;
 
     public NeoPidNetworkTableHelper(String tableName,
             double kP, double kI, double kD) {
-        super(tableName, kP, kI, kD);
-        m_appliedOutputPublisher = m_dataTable.getDoubleTopic("Applied Output").publish();
+        super(tableName, "Applied Output", kP, kI, kD);
     }
 
     public void dashboardUpdate(
             SparkMax motor,
             SparkRelativeEncoder encoder,
             SparkMaxConfig config,
-            Consumer<Double> goToTarget) {
+            Consumer<Double> goToTarget,
+            Consumer<Boolean> extraPidUpdate) {
         m_velocityPub.set(encoder.getVelocity());
         m_positionPub.set(encoder.getPosition());
-        m_appliedOutputPublisher.set(motor.getAppliedOutput());
+        m_outputnPub.set(motor.getAppliedOutput());
 
-        if (m_updatePidSub.get()) {
+        TryReadPids((values) -> {
+            extraPidUpdate.accept(true);
             config.closedLoop
-                    .pid(m_kPSub.get(), m_kISub.get(), m_kDSub.get());
+                    .pid(values.kP(), values.kI(), values.kD());
             motor.configure(config, ResetMode.kNoResetSafeParameters,
                     PersistMode.kNoPersistParameters);
+        });
 
-            m_updatePidPub.set(false);
-        }
-
-        if (m_goToTargetSub.get()) {
-            goToTarget.accept(m_targetSub.get());
-
-            m_goToTargetPub.set(false);
-        }
+        TryReadTarget((target) -> goToTarget.accept(target));
     }
 }

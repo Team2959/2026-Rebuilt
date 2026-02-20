@@ -29,7 +29,6 @@ public class TurretSubsystem extends SubsystemBase {
   private static final double kP = 0.0005;
   private static final double kI = 0.000001;
   private static final double kD = 0.0;
-  private static final double KFf = 0.0;
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", kP, kI, kD);
 
@@ -57,7 +56,7 @@ public class TurretSubsystem extends SubsystemBase {
     if (m_ticks % 15 != 5)
       return;
 
-    m_networkTable.dashboardUpdate(m_turretMotor, m_turretEncoder, m_turretConfig, (t) -> goToTargetAngle(t));
+    m_networkTable.dashboardUpdate(m_turretMotor, m_turretEncoder, m_turretConfig, (t) -> goToTargetAngle(t), (b) -> {});
   }
 
   public void stopTurret() {

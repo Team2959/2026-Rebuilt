@@ -15,9 +15,6 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
@@ -27,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
+import frc.robot.robotarians.NeoPidNetworkTableHelper;
 
 public class IntakeSubsystem extends SubsystemBase {
   public enum ExtendIntakePositionType {
@@ -35,7 +33,8 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private SparkMax m_intakeMotor = new SparkMax(RobotMap.kIntakeMotorSparkMax, MotorType.kBrushless);
-  // private SparkMax m_extendIntakeMotor = new SparkMax(RobotMap.KIntakeExtendMotorSparkMax, MotorType.kBrushless);
+  // private SparkMax m_extendIntakeMotor = new
+  // SparkMax(RobotMap.KIntakeExtendMotorSparkMax, MotorType.kBrushless);
   // private SparkMaxConfig m_extendConfig;
   // private SparkRelativeEncoder m_extendEncoder;
   // private SparkClosedLoopController m_extendController;
@@ -56,20 +55,10 @@ public class IntakeSubsystem extends SubsystemBase {
   private static final double extendKi = 0.0;
   private static final double extendKd = 0.0;
 
-  private final DoubleSubscriber m_kPSub;
-  private final DoubleSubscriber m_kISub;
-  private final DoubleSubscriber m_kDSub;
+  private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Intake Extend", extendKp,
+      extendKi, extendKd);
   private final IntegerSubscriber m_currentLimitSub;
   private final DoubleSubscriber m_maxOutputSub;
-  private final DoubleSubscriber m_extendTargetSub;
-  private final DoublePublisher m_extendPositionPub;
-
-  private final BooleanSubscriber m_goToTargetSub;
-  private final BooleanPublisher m_goToTargetPub;
-  private final BooleanSubscriber m_updatePidSub;
-  private final BooleanPublisher m_updatePidPub;
-
-  private final DoublePublisher m_extendAppliedOutputPub;
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem() {
@@ -79,13 +68,13 @@ public class IntakeSubsystem extends SubsystemBase {
     // m_extendConfig = new SparkMaxConfig();
     // // ToDo: switch back to brake mode
     // m_extendConfig.idleMode(IdleMode.kCoast)
-    //     .smartCurrentLimit(kExtendCurrentLimitAmps)
-    //     .voltageCompensation(12.6);
+    // .smartCurrentLimit(kExtendCurrentLimitAmps)
+    // .voltageCompensation(12.6);
 
     // m_extendConfig.closedLoop
-    //     .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-    //     .pid(extendKp, extendKi, extendKd)
-    //     .outputRange(-kExtendMaxOutput, kExtendMaxOutput);
+    // .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+    // .pid(extendKp, extendKi, extendKd)
+    // .outputRange(-kExtendMaxOutput, kExtendMaxOutput);
 
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Intake");
@@ -98,42 +87,13 @@ public class IntakeSubsystem extends SubsystemBase {
     reverseSpeedTopic.publish().set(defaultSpeed);
     m_ReverseIntakeSpeedSub = reverseSpeedTopic.subscribe(defaultSpeed);
 
-    // PID topic
-    var kpTopic = datatable.getDoubleTopic("kP");
-    kpTopic.publish().set(extendKp);
-    m_kPSub = kpTopic.subscribe(extendKp);
-    var kiTopic = datatable.getDoubleTopic("kI");
-    kiTopic.publish().set(extendKi);
-    m_kISub = kiTopic.subscribe(extendKi);
-    var kDTopic = datatable.getDoubleTopic("kD");
-    kDTopic.publish().set(extendKd);
-    m_kDSub = kDTopic.subscribe(extendKd);
-
-    var ExtendTargetTopic = datatable.getDoubleTopic("Extend Target");
-    ExtendTargetTopic.publish().set(0);
-    m_extendTargetSub = ExtendTargetTopic.subscribe(0);
-
-    var currentLimitTopic = datatable.getIntegerTopic("Current Limit");
+    var currentLimitTopic = m_networkTable.networkTable().getIntegerTopic("Current Limit");
     currentLimitTopic.publish().set(kExtendCurrentLimitAmps);
     m_currentLimitSub = currentLimitTopic.subscribe(kExtendCurrentLimitAmps);
 
-    var maxOutputTopic = datatable.getDoubleTopic("Max Output");
+    var maxOutputTopic = m_networkTable.networkTable().getDoubleTopic("Max Output");
     maxOutputTopic.publish().set(kExtendMaxOutput);
     m_maxOutputSub = maxOutputTopic.subscribe(kExtendMaxOutput);
-
-    m_extendPositionPub = datatable.getDoubleTopic("Extend Position").publish();
-
-    var goToTarget = datatable.getBooleanTopic("go to Target");
-    m_goToTargetPub = goToTarget.publish();
-    m_goToTargetPub.set(false);
-    m_goToTargetSub = goToTarget.subscribe(false);
-
-    var updatePID = datatable.getBooleanTopic("update PID");
-    m_updatePidPub = updatePID.publish();
-    m_updatePidPub.set(false);
-    m_updatePidSub = updatePID.subscribe(false);
-
-    m_extendAppliedOutputPub = datatable.getDoubleTopic("Extend Applied Output").publish();
   }
 
   int m_ticks = 0;
@@ -195,24 +155,14 @@ public class IntakeSubsystem extends SubsystemBase {
     m_IntakeSpeed = m_IntakeSpeedSub.get();
     m_reverseIntakeSpeed = m_ReverseIntakeSpeedSub.get();
 
-    // m_extendPositionPub.set(m_extendEncoder.getPosition());
-    // m_extendAppliedOutputPub.set(m_extendIntakeMotor.getAppliedOutput());
+    // m_networkTable.dashboardUpdate(m_extendIntakeMotor, m_extendEncoder,
+    // m_extendConfig, (t) -> setExtendPosition(t),
+    // (b) -> moreMotorUpdates());
+  }
 
-    if (m_updatePidSub.get()) {
-      // m_extendConfig.smartCurrentLimit((int) m_currentLimitSub.get());
-      // var maxOutput = m_maxOutputSub.get();
-      // m_extendConfig.closedLoop
-      //     .pid(m_kPSub.get(), m_kISub.get(), m_kDSub.get())
-      //     .outputRange(-maxOutput, maxOutput);
-      // m_extendIntakeMotor.configure(m_extendConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-
-      m_updatePidPub.set(false);
-    }
-
-    if (m_goToTargetSub.get()) {
-      setExtendPosition(m_extendTargetSub.get());
-
-      m_goToTargetPub.set(false);
-    }
+  private void moreMotorUpdates() {
+    // m_extendConfig.smartCurrentLimit((int) m_currentLimitSub.get());
+    // var maxOutput = m_maxOutputSub.get();
+    // m_extendConfig.closedLoop.outputRange(-maxOutput, maxOutput);
   }
 }
