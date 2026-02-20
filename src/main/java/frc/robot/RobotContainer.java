@@ -9,6 +9,7 @@ import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.robotarians.Conditioning;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
+import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ClimbExtendSubsystem;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -27,7 +28,8 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
   // private final ShooterSubsytem m_ShooterSubsytem = new ShooterSubsytem();
-  // private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
+  private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
+  private final HopperSubsystem m_hopperSubsystem = new HopperSubsystem();
   // private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
 
   private final Conditioning m_driveXConditioning = new Conditioning();

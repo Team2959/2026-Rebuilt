@@ -35,10 +35,10 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private SparkMax m_intakeMotor = new SparkMax(RobotMap.kIntakeMotorSparkMax, MotorType.kBrushless);
-  private SparkMax m_extendIntakeMotor = new SparkMax(RobotMap.KIntakeExtendMotorSparkMax, MotorType.kBrushless);
-  private SparkMaxConfig m_extendConfig;
-  private SparkRelativeEncoder m_extendEncoder;
-  private SparkClosedLoopController m_extendController;
+  // private SparkMax m_extendIntakeMotor = new SparkMax(RobotMap.KIntakeExtendMotorSparkMax, MotorType.kBrushless);
+  // private SparkMaxConfig m_extendConfig;
+  // private SparkRelativeEncoder m_extendEncoder;
+  // private SparkClosedLoopController m_extendController;
 
   private static final double defaultSpeed = 1.0;
   private final DoubleSubscriber m_IntakeSpeedSub;
@@ -73,18 +73,19 @@ public class IntakeSubsystem extends SubsystemBase {
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem() {
-    m_extendEncoder = (SparkRelativeEncoder) m_extendIntakeMotor.getEncoder();
-    m_extendController = m_extendIntakeMotor.getClosedLoopController();
+    // m_extendEncoder = (SparkRelativeEncoder) m_extendIntakeMotor.getEncoder();
+    // m_extendController = m_extendIntakeMotor.getClosedLoopController();
 
-    m_extendConfig = new SparkMaxConfig();
-    m_extendConfig.idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(kExtendCurrentLimitAmps)
-        .voltageCompensation(12.6);
+    // m_extendConfig = new SparkMaxConfig();
+    // // ToDo: switch back to brake mode
+    // m_extendConfig.idleMode(IdleMode.kCoast)
+    //     .smartCurrentLimit(kExtendCurrentLimitAmps)
+    //     .voltageCompensation(12.6);
 
-    m_extendConfig.closedLoop
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .pid(extendKp, extendKi, extendKd)
-        .outputRange(-kExtendMaxOutput, kExtendMaxOutput);
+    // m_extendConfig.closedLoop
+    //     .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+    //     .pid(extendKp, extendKi, extendKd)
+    //     .outputRange(-kExtendMaxOutput, kExtendMaxOutput);
 
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Intake");
@@ -171,7 +172,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private void setExtendPosition(double position) {
     // currnently in units of rotations
     // ToDo: may need to limit motor power
-    m_extendController.setSetpoint(position, ControlType.kPosition);
+    // m_extendController.setSetpoint(position, ControlType.kPosition);
   }
 
   private void setExtendPosition(ExtendIntakePositionType target) {
@@ -194,16 +195,16 @@ public class IntakeSubsystem extends SubsystemBase {
     m_IntakeSpeed = m_IntakeSpeedSub.get();
     m_reverseIntakeSpeed = m_ReverseIntakeSpeedSub.get();
 
-    m_extendPositionPub.set(m_extendEncoder.getPosition());
-    m_extendAppliedOutputPub.set(m_extendIntakeMotor.getAppliedOutput());
+    // m_extendPositionPub.set(m_extendEncoder.getPosition());
+    // m_extendAppliedOutputPub.set(m_extendIntakeMotor.getAppliedOutput());
 
     if (m_updatePidSub.get()) {
-      m_extendConfig.smartCurrentLimit((int) m_currentLimitSub.get());
-      var maxOutput = m_maxOutputSub.get();
-      m_extendConfig.closedLoop
-          .pid(m_kPSub.get(), m_kISub.get(), m_kDSub.get())
-          .outputRange(-maxOutput, maxOutput);
-      m_extendIntakeMotor.configure(m_extendConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+      // m_extendConfig.smartCurrentLimit((int) m_currentLimitSub.get());
+      // var maxOutput = m_maxOutputSub.get();
+      // m_extendConfig.closedLoop
+      //     .pid(m_kPSub.get(), m_kISub.get(), m_kDSub.get())
+      //     .outputRange(-maxOutput, maxOutput);
+      // m_extendIntakeMotor.configure(m_extendConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
       m_updatePidPub.set(false);
     }
