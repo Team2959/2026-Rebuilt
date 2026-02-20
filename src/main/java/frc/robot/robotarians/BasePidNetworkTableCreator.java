@@ -18,7 +18,6 @@ public class BasePidNetworkTableCreator {
     private final DoubleSubscriber m_kPSub;
     private final DoubleSubscriber m_kISub;
     private final DoubleSubscriber m_kDSub;
-    private final DoubleSubscriber m_kFfSub;
     private final BooleanSubscriber m_updatePidSub;
     private final BooleanPublisher m_updatePidPub;
 
@@ -48,9 +47,6 @@ public class BasePidNetworkTableCreator {
         var kDTopic = datatable.getDoubleTopic("kD");
         kDTopic.publish().set(pidValues.kD());
         m_kDSub = kDTopic.subscribe(pidValues.kD());
-        var ffTopic = datatable.getDoubleTopic("FF");
-        ffTopic.publish().set(0);
-        m_kFfSub = ffTopic.subscribe(0);
 
         var topTopic = datatable.getDoubleTopic("Target");
         topTopic.publish().set(0);
