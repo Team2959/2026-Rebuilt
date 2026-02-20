@@ -30,7 +30,6 @@ public class SwerveModuleThrifty {
     private static final double kSteerP = 1.8;
     private static final double kSteerI = 0.0;
     private static final double kSteerD = 0.0;
-    private static final double kSteerFF = 0.0;
     private static final double kSteerIZone = 1.0;
 
     // measured circumference as 12.375 inches = radius 1.97
@@ -66,7 +65,6 @@ public class SwerveModuleThrifty {
     private final DoubleSubscriber m_SteerKpSub;
     private final DoubleSubscriber m_SteerKiSub;
     private final DoubleSubscriber m_SteerKdSub;
-    private final DoubleSubscriber m_SteerFfSub;
     private final BooleanSubscriber m_updatesteerPIDSub;
     private final BooleanPublisher m_updatesteerPIDPub;
 
@@ -153,10 +151,6 @@ public class SwerveModuleThrifty {
         var steerDTopic = datatable.getDoubleTopic("steer D");
         steerDTopic.publish().set(kSteerD);
         m_SteerKdSub = steerDTopic.subscribe(kSteerD);
-
-        var steerFfTopic = datatable.getDoubleTopic("steer FF");
-        steerFfTopic.publish().set(kSteerFF);
-        m_SteerFfSub = steerFfTopic.subscribe(kSteerFF);
 
         var updatesteerPIDTopic = datatable.getBooleanTopic("update Steer PID");
         m_updatesteerPIDPub = updatesteerPIDTopic.publish();
