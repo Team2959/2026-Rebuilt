@@ -47,9 +47,11 @@ public final class RobotMap {
     public static final int kRightResetNavXButton = 10;
 
     // Co-Piolt Button board
-    public static final int kFire = 1;
-    public static final int kIntake = 2;
-    public static final int kReverseIntake = 3;
+    // public static final int kFire = ?;
+    public static final int kToggleIntake = 12;
+    public static final int kReverseIntake = 1;
+    public static final int kToggleHopper = 11;
+    public static final int kReverseHopper = 6;
 
     // Zeroed values, should be in radians
     // source is google document in Electrical for team - module data
