@@ -10,6 +10,8 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkRelativeEncoder;
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 
@@ -60,6 +62,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem() {
+    var intakeConfig = new SparkMaxConfig();
+    intakeConfig.inverted(true);
+    m_intakeMotor.configure(intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
     m_extendEncoder = (SparkRelativeEncoder) m_extendIntakeMotor.getEncoder();
     m_extendController = m_extendIntakeMotor.getClosedLoopController();
 
@@ -75,6 +81,7 @@ public class IntakeSubsystem extends SubsystemBase {
         .pid(pidValues.kP(), pidValues.kI(), pidValues.kD())
         .outputRange(-kExtendMaxOutput, kExtendMaxOutput);
     m_extendConfig.closedLoop.feedForward.kS(kStatic).kCos(kCosG).kCosRatio(kCosRatio);
+    m_extendIntakeMotor.configure(m_extendConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Intake");
@@ -84,7 +91,7 @@ public class IntakeSubsystem extends SubsystemBase {
     m_IntakeSpeedSub = speedTopic.subscribe(defaultSpeed);
 
     var reverseSpeedTopic = datatable.getDoubleTopic("ReverseIntakeSpeed");
-    reverseSpeedTopic.publish().set(defaultSpeed);
+    reverseSpeedTopic.publish().set(defaultReverseSpeed);
     m_ReverseIntakeSpeedSub = reverseSpeedTopic.subscribe(defaultReverseSpeed);
 
     var currentLimitTopic = m_networkTable.networkTable().getIntegerTopic("Current Limit");
