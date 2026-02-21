@@ -49,6 +49,9 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private static final int kExtendCurrentLimitAmps = 20;
   private static final double kExtendMaxOutput = 0.5;
+  private static final double kStatic = 0.15;
+  private static final double kCosG = 0.3;
+  private static final double kCosRatio = 29.97; // motor 9:1 * gears = 29.97
   private static final PidValuesRecord pidValues = new PidValuesRecord(0.01, 0.0, 0);
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Intake Extend", pidValues);
@@ -63,6 +66,7 @@ public class IntakeSubsystem extends SubsystemBase {
     m_extendConfig = new SparkMaxConfig();
     // ToDo: switch back to brake mode
     m_extendConfig.idleMode(IdleMode.kCoast)
+        .inverted(true)
         .smartCurrentLimit(kExtendCurrentLimitAmps)
         .voltageCompensation(12.6);
 
@@ -70,6 +74,7 @@ public class IntakeSubsystem extends SubsystemBase {
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pid(pidValues.kP(), pidValues.kI(), pidValues.kD())
         .outputRange(-kExtendMaxOutput, kExtendMaxOutput);
+    m_extendConfig.closedLoop.feedForward.kS(kStatic).kCos(kCosG).kCosRatio(kCosRatio);
 
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Intake");
