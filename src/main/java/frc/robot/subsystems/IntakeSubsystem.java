@@ -45,14 +45,14 @@ public class IntakeSubsystem extends SubsystemBase {
   private final DoubleSubscriber m_ReverseIntakeSpeedSub;
   private double m_reverseIntakeSpeed = defaultReverseSpeed;
 
-  private static final int defaultExtendedPosition = 50;
+  private static final int defaultExtendedPosition = 12;
 
   private static final int kExtendCurrentLimitAmps = 20;
   private static final double kExtendMaxOutput = 0.5;
   private static final double kStatic = 0.15;
   private static final double kCosG = 0.3;
   private static final double kCosRatio = 29.97; // motor 9:1 * gears = 29.97
-  private static final PidValuesRecord pidValues = new PidValuesRecord(0.01, 0.0, 0);
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.15, 0.0, 0);
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Intake Extend", pidValues);
   private final IntegerSubscriber m_currentLimitSub;
@@ -66,7 +66,7 @@ public class IntakeSubsystem extends SubsystemBase {
     m_extendConfig = new SparkMaxConfig();
     // ToDo: switch back to brake mode
     m_extendConfig.idleMode(IdleMode.kCoast)
-        .inverted(true)
+        .inverted(false)
         .smartCurrentLimit(kExtendCurrentLimitAmps)
         .voltageCompensation(12.6);
 
@@ -85,7 +85,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     var reverseSpeedTopic = datatable.getDoubleTopic("ReverseIntakeSpeed");
     reverseSpeedTopic.publish().set(defaultSpeed);
-    m_ReverseIntakeSpeedSub = reverseSpeedTopic.subscribe(defaultSpeed);
+    m_ReverseIntakeSpeedSub = reverseSpeedTopic.subscribe(defaultReverseSpeed);
 
     var currentLimitTopic = m_networkTable.networkTable().getIntegerTopic("Current Limit");
     currentLimitTopic.publish().set(kExtendCurrentLimitAmps);
