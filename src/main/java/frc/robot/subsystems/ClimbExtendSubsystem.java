@@ -27,7 +27,8 @@ public class ClimbExtendSubsystem extends SubsystemBase {
     LevelThreeEngage
   }
 
-  private TalonFX m_extendMotor = new TalonFX(RobotMap.kBottomShooterWheelkraken);
+  private TalonFX m_extendMotor = new TalonFX(RobotMap.kExtendLeftMotorkraken);
+  private TalonFX m_extendRightMotor = new TalonFX(RobotMap.kExtendRightMotorkraken);
   private Slot0Configs m_extendConfig = new Slot0Configs();
 
   // https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/PositionClosedLoop/src/main/java/frc/robot/Robot.java
@@ -54,6 +55,9 @@ public class ClimbExtendSubsystem extends SubsystemBase {
     m_extendMotor.getConfigurator().apply(m_extendConfig);
     m_extendMotor.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
     m_extendMotor.setNeutralMode(NeutralModeValue.Brake);
+    m_extendRightMotor.getConfigurator().apply(m_extendConfig);
+    m_extendRightMotor.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
+    m_extendRightMotor.setNeutralMode(NeutralModeValue.Brake);
   }
 
   int m_ticks = 0;
@@ -66,7 +70,10 @@ public class ClimbExtendSubsystem extends SubsystemBase {
     if (m_ticks % 15 != 13)
       return;
 
-    m_networkTable.dashboardUpdate(m_extendMotor, m_extendConfig, (t) -> setExtendPosition(t), (b) -> {});
+    m_networkTable.dashboardUpdate(m_extendMotor, m_extendConfig, (t) -> setExtendPosition(t),
+        (b) -> {
+          m_extendRightMotor.getConfigurator().apply(m_extendConfig);
+        });
   }
 
   public void stopShooter() {
@@ -101,6 +108,7 @@ public class ClimbExtendSubsystem extends SubsystemBase {
 
   private void setExtendPosition(double position) {
     m_extendMotor.setControl(m_extendPositionVoltage.withPosition(position));
+    m_extendRightMotor.setControl(m_extendPositionVoltage.withPosition(position));
     // m_extendMotor.setControl(m_positionTorque.withPosition(position));
   }
 

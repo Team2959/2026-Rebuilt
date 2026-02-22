@@ -23,7 +23,7 @@ public class ClimbRotateSubsystem extends SubsystemBase {
     Retracted
   }
 
-  private TalonFX m_rotateMotor = new TalonFX(RobotMap.kRotateMotorkraken);
+  private TalonFX m_rotateMotor = new TalonFX(99);
   private Slot0Configs m_rotateConfig = new Slot0Configs();
 
   private PositionVoltage m_rotatePositionVoltage;
