@@ -47,10 +47,17 @@ public class IntakeSubsystem extends SubsystemBase {
   private final DoubleSubscriber m_ReverseIntakeSpeedSub;
   private double m_reverseIntakeSpeed = defaultReverseSpeed;
 
-  private static final int defaultExtendedPosition = 12;
+  // measured rotations from starting 0 position
+  private static final int defaultExtendedPosition = 14;
 
+  // power and current limiting
   private static final int kExtendCurrentLimitAmps = 20;
   private static final double kExtendMaxOutput = 0.5;
+  // following Rev's arm kS and kG voltage measurements for feed forward
+  // https://docs.revrobotics.com/revlib/spark/closed-loop/feed-forward-control
+  //   V1 = 0.45; V2 = 0.15
+  //   kS = (V1 - V2)/2.0
+  //   kCosG = V2 + kS
   private static final double kStatic = 0.15;
   private static final double kCosG = 0.3;
   private static final double kCosRatio = 29.97; // motor 9:1 * gears = 29.97
@@ -138,7 +145,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private void setExtendPosition(double position) {
     // currnently in units of rotations
-    // ToDo: may need to limit motor power
     m_extendController.setSetpoint(position, ControlType.kPosition);
   }
 

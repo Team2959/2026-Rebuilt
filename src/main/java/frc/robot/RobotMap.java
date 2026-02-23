@@ -49,6 +49,8 @@ public final class RobotMap {
 
     // Co-Piolt Button board
     // public static final int kFire = ?;
+    public static final int kExtendIntake = 2;  // ToDo: get real #
+    public static final int kRetractIntake = 3;  // ToDo: get real #
     public static final int kToggleIntake = 12;
     public static final int kReverseIntake = 1;
     public static final int kToggleHopper = 11;

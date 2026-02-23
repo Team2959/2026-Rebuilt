@@ -27,9 +27,12 @@ public class TurretSubsystem extends SubsystemBase {
   private SparkClosedLoopController m_turretController;
   private final SparkMaxConfig m_turretConfig;
 
-  private static final PidValuesRecord pidValues = new PidValuesRecord(0.0005, 0.000001, 0);
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.01, 0, 0);
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
+
+  private final double kMinTurrentAngle = -110;
+  private final double kMaxTurretAngle = 110;
 
   /** Creates a new TurretSubsystem. */
   public TurretSubsystem() {
@@ -55,7 +58,9 @@ public class TurretSubsystem extends SubsystemBase {
     if (m_ticks % 15 != 5)
       return;
 
-    m_networkTable.dashboardUpdate(m_turretMotor, m_turretEncoder, m_turretConfig, (t) -> goToTargetAngle(t), (b) -> {});
+    m_networkTable.dashboardUpdate(m_turretMotor, m_turretEncoder, m_turretConfig,
+        (t) -> goToTargetAngle(t),
+        (b) -> {});
   }
 
   public void stopTurret() {
@@ -68,6 +73,8 @@ public class TurretSubsystem extends SubsystemBase {
     // the target
     // ToDo: change to using degrees as the input, have a conversion from degrees to
     // position
+    // if (targetAngle < kMinTurrentAngle || targetAngle > kMaxTurretAngle)
+    //   return;
     m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
   }
 }

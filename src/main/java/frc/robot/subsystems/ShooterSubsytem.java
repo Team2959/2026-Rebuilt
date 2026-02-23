@@ -11,8 +11,6 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.KrakenPidNetworkTableHelper;
@@ -92,7 +90,7 @@ public class ShooterSubsytem extends SubsystemBase {
     // m_topShooterWheel.setControl(m_topVelocityVoltage.withVelocity(top));
     m_bottomShooterWheel.setControl(m_bottomVelocityVoltage.withVelocity(bottom));
 
-    // m_topShooterWheel.setControl(m_positionTorque.withPosition(top));
+    // m_bottomShooterWheel.setControl(m_positionTorque.withPosition(bottom));
   }
 
   private void dashboardUpdate() {
