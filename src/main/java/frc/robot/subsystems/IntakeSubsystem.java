@@ -48,7 +48,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private double m_reverseIntakeSpeed = defaultReverseSpeed;
 
   // measured rotations from starting 0 position
-  private static final int defaultExtendedPosition = 14;
+  private static final double defaultExtendedPosition = 12.5;
 
   // power and current limiting
   private static final int kExtendCurrentLimitAmps = 20;
@@ -149,7 +149,7 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private void setExtendPosition(ExtendIntakePositionType target) {
-    var newPosition = 0;
+    var newPosition = 0.0;
     if (target == ExtendIntakePositionType.Extended) {
       newPosition = defaultExtendedPosition;
     }

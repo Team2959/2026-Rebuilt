@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.commands.ShooterVelocityfromDistanceCommand;
 import frc.robot.commands.TeleOpDriveCommand;
+import frc.robot.commands.TurretAutoTarget;
 import frc.robot.robotarians.Conditioning;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
@@ -35,7 +36,8 @@ public class RobotContainer {
   // private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
   // private final ShooterSubsytem m_ShooterSubsytem = new ShooterSubsytem();
   // private final TurretSubsystem m_turretSubsystem = new TurretSubsystem();
-  // private final ClimbExtendSubsystem m_climbExtendSubsystem = new ClimbExtendSubsystem();
+  // private final ClimbExtendSubsystem m_climbExtendSubsystem = new
+  // ClimbExtendSubsystem();
 
   private final Conditioning m_driveXConditioning = new Conditioning();
   private final Conditioning m_driveYConditioning = new Conditioning();
@@ -77,8 +79,15 @@ public class RobotContainer {
         () -> getDriveXInput(), () -> getDriveYInput(), () -> getTurnInput(),
         () -> m_robot.isTeleopEnabled()));
 
+    // m_turretSubsystem.setDefaultCommand(new TurretAutoTarget(m_turretSubsystem,
+    //     () -> {
+    //       return m_driveSubsystem.getAngle().getDegrees();
+    //     }));
+
     m_rightJoystick.button(RobotMap.kRightResetNavXButton).onTrue(
-      new InstantCommand(() -> {m_driveSubsystem.resetNavX();}, m_driveSubsystem));
+        new InstantCommand(() -> {
+          m_driveSubsystem.resetNavX();
+        }, m_driveSubsystem));
     m_leftJoystick.button(RobotMap.kLeftLockWheels).whileTrue(m_driveSubsystem.lockWheelsCommand());
 
     m_buttonBox.button(RobotMap.kExtendIntake).onTrue(m_intakeSubsystem.extendIntakeCommand());

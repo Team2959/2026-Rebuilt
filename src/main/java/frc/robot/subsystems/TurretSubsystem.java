@@ -46,6 +46,8 @@ public class TurretSubsystem extends SubsystemBase {
         .pid(pidValues.kP(), pidValues.kI(), pidValues.kD());
 
     m_turretMotor.configure(m_turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    goToTargetAngle(0);
   }
 
   int m_ticks = 0;

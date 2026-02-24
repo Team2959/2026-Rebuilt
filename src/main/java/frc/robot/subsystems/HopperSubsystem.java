@@ -4,8 +4,12 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
@@ -26,6 +30,12 @@ public class HopperSubsystem extends SubsystemBase {
 
   /** Creates a new HopperSubsystem. */
   public HopperSubsystem() {
+    SparkMaxConfig config = new SparkMaxConfig();
+    config.idleMode(IdleMode.kCoast)
+        .inverted(true);
+
+    m_HopperMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Hopper");
 
