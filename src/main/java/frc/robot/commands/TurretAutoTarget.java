@@ -24,18 +24,23 @@ public class TurretAutoTarget extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     // ToDo: be able to target more than just the hub
-    m_turretSubsystem.goToTargetAngle(AprilTagHelpers.turretAngleToHub(m_robotAngleSupplier.get()));
+    var target = AprilTagHelpers.turretAngleToHub(m_robotAngleSupplier.get());
+    if (Double.isNaN(target))
+      return;
+    m_turretSubsystem.goToTargetAngle(target);
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+  }
 
   // Returns true when the command should end.
   @Override

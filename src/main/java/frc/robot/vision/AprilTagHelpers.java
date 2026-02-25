@@ -15,6 +15,8 @@ public class AprilTagHelpers {
     // see spreadsheet calculations: https://docs.google.com/spreadsheets/d/1LeHMqRkg8qOJIvRW7yfcDIsMGJCiFuTLF8awAVgnMac/edit?usp=sharing
     public static double distanceToHub() {
         var pose3d = alliancePose();
+        if (pose3d.getX() <= 0 && pose3d.getY() <= 0)
+            return Double.NaN;
 
         // calculate distance from robot to hub, from spreadsheet calcs
         // B14 = DeltaX
@@ -28,6 +30,9 @@ public class AprilTagHelpers {
 
     public static double turretAngleToHub(double currentRobotRotation) {
         var pose3d = alliancePose();
+        // check for valid pose, if not return unusable angle
+        if (pose3d.getX() <= 0 && pose3d.getY() <= 0)
+            return Double.NaN;
 
         // calculate target turret angle to hub, from spreadsheet calcs
         // B14 = DeltaX
