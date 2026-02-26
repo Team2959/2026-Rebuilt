@@ -11,6 +11,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 public class AprilTagHelpers {
     private final static double hubX = 4.636;
     private final static double hubY = 4.0;
+    private final static double leftBumpX = 4.2;
+    private final static double rightBumpY = 2.5;
+    private final static double bumpY = 5.5;
 
     // see spreadsheet calculations: https://docs.google.com/spreadsheets/d/1LeHMqRkg8qOJIvRW7yfcDIsMGJCiFuTLF8awAVgnMac/edit?usp=sharing
     public static double distanceToHub() {

@@ -6,7 +6,7 @@ package frc.robot;
 
 import frc.robot.commands.ShooterVelocityfromDistanceCommand;
 import frc.robot.commands.TeleOpDriveCommand;
-import frc.robot.commands.TurretAutoTarget;
+import frc.robot.commands.TurretAutoTargetCommand;
 import frc.robot.robotarians.Conditioning;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.FeederSubsystem;

@@ -10,12 +10,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.vision.AprilTagHelpers;
 
-public class TurretAutoTarget extends Command {
+public class TurretAutoTargetCommand extends Command {
   private final TurretSubsystem m_turretSubsystem;
   private Supplier<Double> m_robotAngleSupplier;
 
   /** Creates a new TurretAutoTarget. */
-  public TurretAutoTarget(TurretSubsystem turretSubsystem, Supplier<Double> robotAngle) {
+  public TurretAutoTargetCommand(TurretSubsystem turretSubsystem, Supplier<Double> robotAngle) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(turretSubsystem);
     m_turretSubsystem = turretSubsystem;
