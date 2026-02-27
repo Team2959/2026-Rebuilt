@@ -48,7 +48,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private double m_reverseIntakeSpeed = defaultReverseSpeed;
 
   // measured rotations from starting 0 position
-  private static final double defaultExtendedPosition = 12.5;
+  private static final double defaultExtendedPosition = 13.5;
 
   // power and current limiting
   private static final int kExtendCurrentLimitAmps = 20;
@@ -70,7 +70,7 @@ public class IntakeSubsystem extends SubsystemBase {
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem() {
     var intakeConfig = new SparkMaxConfig();
-    intakeConfig.inverted(true);
+    intakeConfig.inverted(true).idleMode(IdleMode.kCoast);
     m_intakeMotor.configure(intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     m_extendEncoder = (SparkRelativeEncoder) m_extendIntakeMotor.getEncoder();
@@ -78,7 +78,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     m_extendConfig = new SparkMaxConfig();
     // ToDo: switch back to brake mode
-    m_extendConfig.idleMode(IdleMode.kCoast)
+
+    m_extendConfig.idleMode(IdleMode.kBrake)
         .inverted(false)
         .smartCurrentLimit(kExtendCurrentLimitAmps)
         .voltageCompensation(12.6);

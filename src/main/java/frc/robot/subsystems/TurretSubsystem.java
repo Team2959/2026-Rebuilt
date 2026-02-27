@@ -39,7 +39,7 @@ public class TurretSubsystem extends SubsystemBase {
     m_turretEncoder = (SparkRelativeEncoder) m_turretMotor.getEncoder();
     m_turretController = m_turretMotor.getClosedLoopController();
     m_turretConfig = new SparkMaxConfig();
-    m_turretConfig.idleMode(IdleMode.kBrake);
+    m_turretConfig.idleMode(IdleMode.kCoast);
 
     m_turretConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)

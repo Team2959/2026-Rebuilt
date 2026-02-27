@@ -4,14 +4,19 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
 
@@ -19,12 +24,16 @@ public class FeederSubsystem extends SubsystemBase {
 
   private SparkMax m_FeederMotor = new SparkMax(RobotMap.kFeederMotorSparkMax, MotorType.kBrushless);
 
-  private static final double defaultspeed = 0.5;
+  private static final double defaultspeed = 1.0;
   private final DoubleSubscriber m_FeederSpeedSub;
   private double m_FeederSpeed = defaultspeed;
 
   /** Creates a new FeederSubsystem. */
   public FeederSubsystem() {
+    var config = new SparkMaxConfig();
+    config.idleMode(IdleMode.kCoast);
+    m_FeederMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Feeder");
 
@@ -59,6 +68,14 @@ public class FeederSubsystem extends SubsystemBase {
 
   public Command startfeederCommand() {
     return new InstantCommand(() -> startFeeder(), this);
+  }
+
+  private void reverseFeeder() {
+    m_FeederMotor.set(-m_FeederSpeed / 2.0);
+  }
+
+  public Command reverseHopperCommand() {
+    return new StartEndCommand(() -> reverseFeeder(), () -> stopFeeder(), this);
   }
 
   public void dashboardUpdate() {
