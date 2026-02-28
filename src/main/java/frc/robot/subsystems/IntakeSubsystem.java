@@ -160,11 +160,17 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Command extendIntakeCommand() {
-    return new InstantCommand(() -> setExtendPosition(ExtendIntakePositionType.Extended), this);
+    return new InstantCommand(() ->{
+      setExtendPosition(ExtendIntakePositionType.Extended);
+      startIntake();
+    } , this);
   }
 
   public Command retractIntakeCommand() {
-    return new InstantCommand(() -> setExtendPosition(ExtendIntakePositionType.Retracted), this);
+    return new InstantCommand(() ->{
+      setExtendPosition(ExtendIntakePositionType.Retracted);
+      stopIntake();
+    } , this);
   }
 
   public void dashboardUpdate() {

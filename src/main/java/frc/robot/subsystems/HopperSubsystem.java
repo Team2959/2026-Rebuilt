@@ -61,7 +61,7 @@ public class HopperSubsystem extends SubsystemBase {
   }
 
   public Command stopHopperCommand() {
-    return new InstantCommand(() -> stopHopper(), this);
+    return new InstantCommand(() -> stopHopper());
   }
 
   private void startHopper() {
@@ -69,7 +69,7 @@ public class HopperSubsystem extends SubsystemBase {
   }
 
   public Command startHopperCommand() {
-    return new InstantCommand(() -> startHopper(), this);
+    return new InstantCommand(() -> startHopper());
   }
 
   private void reverseHopper() {

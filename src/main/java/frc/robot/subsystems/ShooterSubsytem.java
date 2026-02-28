@@ -18,47 +18,33 @@ import frc.robot.robotarians.PidValuesRecord;
 
 public class ShooterSubsytem extends SubsystemBase {
 
-  // private TalonFX m_topShooterWheel = new TalonFX(RobotMap.kTopShooterWheelkraken);
-  private TalonFX m_bottomShooterWheel = new TalonFX(RobotMap.kBottomShooterWheelkraken);
+  private TalonFX m_shooterWheel = new TalonFX(RobotMap.kBottomShooterWheelkraken);
   private Slot0Configs m_slot0Configs = new Slot0Configs();
 
   // https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/VelocityClosedLoop/src/main/java/frc/robot/Robot.java
   /* Keep a brake request so we can disable the motor */
   private final NeutralOut m_brake = new NeutralOut();
 
-  // private VelocityVoltage m_topVelocityVoltage;
-  private VelocityVoltage m_bottomVelocityVoltage;
+  private VelocityVoltage m_velocityVoltage;
 
   private static final PidValuesRecord pidValues = new PidValuesRecord(0.05, 0.0, 0);
 
   private final KrakenPidNetworkTableHelper m_networkTable = new KrakenPidNetworkTableHelper("Shooter", pidValues);
-  // private final DoubleSubscriber m_topTargetVelocitySub;
-  // private final DoublePublisher m_topVelocityPub;
-  // private final DoublePublisher m_topDutyCyclePublisher;
 
   /** Creates a new Shootersubsytem. */
   public ShooterSubsytem() {
     // m_topVelocityVoltage = new VelocityVoltage(0);
-    m_bottomVelocityVoltage = new VelocityVoltage(0);
+    m_velocityVoltage = new VelocityVoltage(0);
 
     m_slot0Configs.kS = 0.05; // Add 0.05 V output to overcome static friction
     m_slot0Configs.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
     m_slot0Configs.kP = pidValues.kP(); // An error of 1 rps results in 0.05 V output
     m_slot0Configs.kI = pidValues.kI(); // no output for integrated error
     m_slot0Configs.kD = pidValues.kD(); // no output for error derivative
-    // m_topShooterWheel.getConfigurator().apply(m_slot0Configs);
-    // m_topShooterWheel.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
-    // m_topShooterWheel.setNeutralMode(NeutralModeValue.Coast);
-    m_bottomShooterWheel.getConfigurator().apply(m_slot0Configs);
-    m_bottomShooterWheel.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
-    m_bottomShooterWheel.setNeutralMode(NeutralModeValue.Coast);
 
-    // var datatable = m_networkTable.networkTable();
-    // var topTopic = datatable.getDoubleTopic("Top Target Velocity");
-    // topTopic.publish().set(0);
-    // m_topTargetVelocitySub = topTopic.subscribe(0);
-    // m_topVelocityPub = datatable.getDoubleTopic("Top Velocity").publish();
-    // m_topDutyCyclePublisher = datatable.getDoubleTopic("Top Duty Cycle").publish();
+    m_shooterWheel.getConfigurator().apply(m_slot0Configs);
+    m_shooterWheel.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
+    m_shooterWheel.setNeutralMode(NeutralModeValue.Coast);
 
     stopShooter();
   }
@@ -77,36 +63,28 @@ public class ShooterSubsytem extends SubsystemBase {
   }
 
   public void stopShooter() {
-    // m_topShooterWheel.setControl(m_brake);
-    m_bottomShooterWheel.setControl(m_brake);
+    m_shooterWheel.setControl(m_brake);
   }
 
   public void setVelocityfromDistance(double distance) {
     // ToDo: converts distance to velocity for accuracy
+    var velocity = 1500 + 50 * distance;
     // command each motor to control to the desired velocity
-    setVelocity(0, 0);
+    setVelocity(velocity);
   }
 
-  private void setVelocity(double top, double bottom) {
+  private void setVelocity(double target) {
     // current units are rotations per second
-    // m_topShooterWheel.setControl(m_topVelocityVoltage.withVelocity(top));
-    m_bottomShooterWheel.setControl(m_bottomVelocityVoltage.withVelocity(bottom));
+    m_shooterWheel.setControl(m_velocityVoltage.withVelocity(target));
 
-    // m_bottomShooterWheel.setControl(m_positionTorque.withPosition(bottom));
+    // m_shooterWheel.setControl(m_positionTorque.withPosition(bottom));
   }
 
   private void dashboardUpdate() {
-    // m_topVelocityPub.set(m_topShooterWheel.getVelocity().getValueAsDouble());
-    // m_topDutyCyclePublisher.set(m_topShooterWheel.getDutyCycle().getValueAsDouble());
-    m_networkTable.dashboardUpdate(m_bottomShooterWheel, m_slot0Configs, (t) -> setBothVelocities(t), (b) -> updateTopConfigs());
+    m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) -> setVelocity(t), (b) -> {});
   }
 
-  private void updateTopConfigs(){
-      // m_topShooterWheel.getConfigurator().apply(m_slot0Configs);
-  }
-
-  private void setBothVelocities(Double bottomTarget){
-      // setVelocity(m_topTargetVelocitySub.get(), bottomTarget);
-      setVelocity(0, bottomTarget);
+  public void shooterToIdle(){
+    setVelocity(500.0);
   }
 }
