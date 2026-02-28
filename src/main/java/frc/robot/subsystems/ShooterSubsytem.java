@@ -12,13 +12,23 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.KrakenPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
 import frc.robot.vision.AprilTagHelpers;
 
-public class ShooterSubsytem extends SubsystemBase {
+public class ShooterSubsytem extends SubsystemBase 
+{
+ public enum ShooterStateType
+ {
+  Off,
+  Idle,
+  PreptoShoot,
+  Shooting
+ }
 
   private TalonFX m_shooterWheel = new TalonFX(RobotMap.kBottomShooterWheelkraken);
   private Slot0Configs m_slot0Configs = new Slot0Configs();
@@ -34,6 +44,8 @@ public class ShooterSubsytem extends SubsystemBase {
   private final KrakenPidNetworkTableHelper m_networkTable = new KrakenPidNetworkTableHelper("Shooter", pidValues);
 
   private final DoublePublisher m_aprilTagDistancePub;
+
+  private ShooterStateType m_ShooterState = ShooterStateType.Off;
 
   /** Creates a new Shootersubsytem. */
   public ShooterSubsytem() {
@@ -92,7 +104,24 @@ public class ShooterSubsytem extends SubsystemBase {
     m_aprilTagDistancePub.set(AprilTagHelpers.distanceToTarget());
   }
 
+  public Command shooterToIdleCommand() {
+    return new InstantCommand(() -> shooterToIdle(), this);
+  }
+
   public void shooterToIdle(){
     setVelocity(500.0);
+    setShooterState(ShooterStateType.Idle);
+  }
+
+  public ShooterStateType getShooterState(){
+    return m_ShooterState;
+  }
+
+  public void setShooterState(ShooterStateType newState){
+    m_ShooterState = newState;
+  }
+
+  public boolean isAtVelocity(){
+    return false;
   }
 }

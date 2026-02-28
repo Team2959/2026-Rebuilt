@@ -102,4 +102,8 @@ public class TurretSubsystem extends SubsystemBase {
       return angle + 360;
     return angle;
   }
+
+  public boolean isAtAngle(){
+    return false;
+  }
 }

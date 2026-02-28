@@ -12,30 +12,22 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ShooterSubsytem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
 import frc.robot.subsystems.ClimbExtendSubsystem;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-/**
- * This class is where the bulk of the robot should be declared. Since
- * Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in
- * the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of
- * the robot (including
- * subsystems, commands, and trigger mappings) should be declared here.
- */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
   private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
   private final HopperSubsystem m_hopperSubsystem = new HopperSubsystem();
-  // private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
-  // private final ShooterSubsytem m_ShooterSubsytem = new ShooterSubsytem();
-  // private final TurretSubsystem m_turretSubsystem = new TurretSubsystem();
+  private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
+  private final ShooterSubsytem m_ShooterSubsytem = new ShooterSubsytem();
+  private final TurretSubsystem m_turretSubsystem = new TurretSubsystem();
   // private final ClimbExtendSubsystem m_climbExtendSubsystem = new
   // ClimbExtendSubsystem();
 
@@ -85,8 +77,19 @@ public class RobotContainer {
     m_buttonBox.button(RobotMap.kToggleHopper).toggleOnTrue(m_hopperSubsystem.toggleHopperCommand());
     m_buttonBox.button(RobotMap.kReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
 
-    // m_buttonBox.button(RobotMap.kfire).whileTrue(new
-    // ShooterVelocityfromDistanceCommand(m_ShooterSubsytem));
+    m_buttonBox.button(RobotMap.kFire).onTrue(
+      new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem)
+      .alongWith(m_hopperSubsystem.startHopperCommand()));
+    m_buttonBox.button(RobotMap.kStopFire).onTrue(
+      m_FeederSubsystem.stopfeederCommand()
+      .alongWith(m_ShooterSubsytem.shooterToIdleCommand()));
+
+    Trigger startFeederTrigger = new Trigger(() -> m_ShooterSubsytem.getShooterState() == ShooterStateType.Shooting);
+    startFeederTrigger.onTrue(m_FeederSubsystem.startfeederCommand());
+    Trigger atVelocityTrigger = new Trigger(() -> m_ShooterSubsytem.isAtVelocity());
+    Trigger atAngleTrigger = new Trigger(() -> m_turretSubsystem.isAtAngle());
+    atVelocityTrigger.and(atAngleTrigger).onTrue(
+      new InstantCommand(() -> m_ShooterSubsytem.setShooterState(ShooterStateType.Shooting)));
   }
 
   public double getDriveXInput() {
