@@ -6,9 +6,12 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.StrictFollower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.networktables.DoublePublisher;
@@ -30,7 +33,8 @@ public class ShooterSubsytem extends SubsystemBase
   Shooting
  }
 
-  private TalonFX m_shooterWheel = new TalonFX(RobotMap.kBottomShooterWheelkraken);
+  private TalonFX m_shooterWheel = new TalonFX(RobotMap.kShooterFollowerWheelkraken);
+  private TalonFX m_shooterFollowerWheel = new TalonFX(RobotMap.kShooterFollowerWheelkraken);
   private Slot0Configs m_slot0Configs = new Slot0Configs();
 
   // https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/VelocityClosedLoop/src/main/java/frc/robot/Robot.java
@@ -49,7 +53,6 @@ public class ShooterSubsytem extends SubsystemBase
 
   /** Creates a new Shootersubsytem. */
   public ShooterSubsytem() {
-    // m_topVelocityVoltage = new VelocityVoltage(0);
     m_velocityVoltage = new VelocityVoltage(0);
 
     m_slot0Configs.kS = 0.05; // Add 0.05 V output to overcome static friction
@@ -61,6 +64,9 @@ public class ShooterSubsytem extends SubsystemBase
     m_shooterWheel.getConfigurator().apply(m_slot0Configs);
     m_shooterWheel.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
     m_shooterWheel.setNeutralMode(NeutralModeValue.Coast);
+
+    m_shooterFollowerWheel.setNeutralMode(NeutralModeValue.Coast);
+    m_shooterFollowerWheel.setControl(new Follower(RobotMap.kShooterFollowerWheelkraken, MotorAlignmentValue.Opposed));
 
     stopShooter();
 
