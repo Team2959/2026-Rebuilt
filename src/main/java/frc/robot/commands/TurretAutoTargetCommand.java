@@ -31,7 +31,7 @@ public class TurretAutoTargetCommand extends Command {
   @Override
   public void execute() {
     // ToDo: be able to target more than just the hub
-    var target = AprilTagHelpers.turretAngleToHub(m_robotAngleSupplier.get());
+    var target = AprilTagHelpers.turretAngleToTarget(m_robotAngleSupplier.get());
     if (Double.isNaN(target))
       return;
     m_turretSubsystem.goToTargetAngle(target);

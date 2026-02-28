@@ -109,6 +109,8 @@ public class IntakeSubsystem extends SubsystemBase {
     var maxOutputTopic = m_networkTable.networkTable().getDoubleTopic("Max Output");
     maxOutputTopic.publish().set(kExtendMaxOutput);
     m_maxOutputSub = maxOutputTopic.subscribe(kExtendMaxOutput);
+
+    setExtendPosition(0);
   }
 
   int m_ticks = 0;

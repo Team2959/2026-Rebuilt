@@ -59,6 +59,8 @@ public class ShooterSubsytem extends SubsystemBase {
     // m_topTargetVelocitySub = topTopic.subscribe(0);
     // m_topVelocityPub = datatable.getDoubleTopic("Top Velocity").publish();
     // m_topDutyCyclePublisher = datatable.getDoubleTopic("Top Duty Cycle").publish();
+
+    stopShooter();
   }
 
   int m_ticks = 0;

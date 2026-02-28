@@ -27,12 +27,15 @@ public class TurretSubsystem extends SubsystemBase {
   private SparkClosedLoopController m_turretController;
   private final SparkMaxConfig m_turretConfig;
 
+  private static final double kStatic = 0.01;
+  private static final double kG = 0.0;
   private static final PidValuesRecord pidValues = new PidValuesRecord(0.01, 0, 0);
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
 
-  private final double kMinTurrentAngle = -110;
   private final double kMaxTurretAngle = 110;
+  private final double kMinTurrentAngle = -kMaxTurretAngle;
+  private double m_requestedAngle = 0;
 
   /** Creates a new TurretSubsystem. */
   public TurretSubsystem() {
@@ -44,6 +47,7 @@ public class TurretSubsystem extends SubsystemBase {
     m_turretConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pid(pidValues.kP(), pidValues.kI(), pidValues.kD());
+    // m_turretConfig.closedLoop.feedForward.kS(kStatic).kG(kG);
 
     m_turretMotor.configure(m_turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -73,10 +77,20 @@ public class TurretSubsystem extends SubsystemBase {
     // currently using rotations
     // ToDo: limit input to min/max allowed angles, if out of range, don't change
     // the target
-    // ToDo: change to using degrees as the input, have a conversion from degrees to
-    // position
-    // if (targetAngle < kMinTurrentAngle || targetAngle > kMaxTurretAngle)
+    // m_requestedAngle = keepAngleInOneEightySpace(targetAngle);
+    // if (m_requestedAngle < kMinTurrentAngle || m_requestedAngle > kMaxTurretAngle)
     //   return;
+    // ToDo: change to using degrees as the input, have a conversion from degrees to
+    // position or use Position Conversion Factor
     m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
+  }
+
+  private double keepAngleInOneEightySpace(double angle){
+    // =IF(C20> 180, C20-360, IF(C20< -180, C20+360, C20))
+    if (angle > 180)
+      return angle - 360;
+    if (angle < -180)
+      return angle + 360;
+    return angle;
   }
 }

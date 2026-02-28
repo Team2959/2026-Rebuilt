@@ -58,6 +58,8 @@ public class ClimbExtendSubsystem extends SubsystemBase {
     m_extendRightMotor.getConfigurator().apply(m_extendConfig);
     m_extendRightMotor.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
     m_extendRightMotor.setNeutralMode(NeutralModeValue.Brake);
+
+    stopClimb();
   }
 
   int m_ticks = 0;
@@ -76,7 +78,7 @@ public class ClimbExtendSubsystem extends SubsystemBase {
         });
   }
 
-  public void stopShooter() {
+  public void stopClimb() {
     m_extendMotor.setControl(m_brake);
   }
 
