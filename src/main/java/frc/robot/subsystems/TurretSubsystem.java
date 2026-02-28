@@ -29,9 +29,8 @@ public class TurretSubsystem extends SubsystemBase {
   private SparkClosedLoopController m_turretController;
   private final SparkMaxConfig m_turretConfig;
 
-  private static final double kStatic = 0.01;
-  private static final double kG = 0.0;
-  private static final PidValuesRecord pidValues = new PidValuesRecord(0.01, 0, 0);
+  private static final double kStatic = 0.18;
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.015, 0, 0);
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
 
@@ -46,12 +45,14 @@ public class TurretSubsystem extends SubsystemBase {
     m_turretEncoder = (SparkRelativeEncoder) m_turretMotor.getEncoder();
     m_turretController = m_turretMotor.getClosedLoopController();
     m_turretConfig = new SparkMaxConfig();
-    m_turretConfig.idleMode(IdleMode.kCoast);
+    m_turretConfig.idleMode(IdleMode.kCoast).inverted(true);
 
+    // measured on turret that it took 25.6 motor rotations to turn 360 degrees
+    m_turretConfig.encoder.positionConversionFactor(25.6 / 360.0);
     m_turretConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pid(pidValues.kP(), pidValues.kI(), pidValues.kD());
-    // m_turretConfig.closedLoop.feedForward.kS(kStatic).kG(kG);
+    m_turretConfig.closedLoop.feedForward.kS(kStatic);
 
     m_turretMotor.configure(m_turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -83,14 +84,9 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public void goToTargetAngle(double targetAngle) {
-    // currently using rotations
-    // ToDo: limit input to min/max allowed angles, if out of range, don't change
-    // the target
-    // m_requestedAngle = keepAngleInOneEightySpace(targetAngle);
-    // if (m_requestedAngle < kMinTurrentAngle || m_requestedAngle > kMaxTurretAngle)
-    //   return;
-    // ToDo: change to using degrees as the input, have a conversion from degrees to
-    // position or use Position Conversion Factor
+    m_requestedAngle = keepAngleInOneEightySpace(targetAngle);
+    if (m_requestedAngle < kMinTurrentAngle || m_requestedAngle > kMaxTurretAngle)
+      return;
     m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
   }
 

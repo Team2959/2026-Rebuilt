@@ -43,7 +43,7 @@ public class ShooterSubsytem extends SubsystemBase
 
   private VelocityVoltage m_velocityVoltage;
 
-  private static final PidValuesRecord pidValues = new PidValuesRecord(0.05, 0.0, 0);
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.01, 0.0, 0);
 
   private final KrakenPidNetworkTableHelper m_networkTable = new KrakenPidNetworkTableHelper("Shooter", pidValues);
 
