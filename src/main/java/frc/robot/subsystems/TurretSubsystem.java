@@ -15,10 +15,12 @@ import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.NeoPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
+import frc.robot.vision.AprilTagHelpers;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -37,6 +39,8 @@ public class TurretSubsystem extends SubsystemBase {
   private final double kMinTurrentAngle = -kMaxTurretAngle;
   private double m_requestedAngle = 0;
 
+  private final DoublePublisher m_aprilTagTargetPub;
+
   /** Creates a new TurretSubsystem. */
   public TurretSubsystem() {
     m_turretEncoder = (SparkRelativeEncoder) m_turretMotor.getEncoder();
@@ -51,6 +55,10 @@ public class TurretSubsystem extends SubsystemBase {
 
     m_turretMotor.configure(m_turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
+    // additional publisher
+    var topic = m_networkTable.networkTable().getDoubleTopic("April Tag Angle");
+    m_aprilTagTargetPub = topic.publish();
+    
     goToTargetAngle(0);
   }
 
@@ -67,6 +75,7 @@ public class TurretSubsystem extends SubsystemBase {
     m_networkTable.dashboardUpdate(m_turretMotor, m_turretEncoder, m_turretConfig,
         (t) -> goToTargetAngle(t),
         (b) -> {});
+    m_aprilTagTargetPub.set(AprilTagHelpers.turretAngleToTarget(0));
   }
 
   public void stopTurret() {

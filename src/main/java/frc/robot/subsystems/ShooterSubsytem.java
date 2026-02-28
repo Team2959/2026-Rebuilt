@@ -11,10 +11,12 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.KrakenPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
+import frc.robot.vision.AprilTagHelpers;
 
 public class ShooterSubsytem extends SubsystemBase {
 
@@ -30,6 +32,8 @@ public class ShooterSubsytem extends SubsystemBase {
   private static final PidValuesRecord pidValues = new PidValuesRecord(0.05, 0.0, 0);
 
   private final KrakenPidNetworkTableHelper m_networkTable = new KrakenPidNetworkTableHelper("Shooter", pidValues);
+
+  private final DoublePublisher m_aprilTagDistancePub;
 
   /** Creates a new Shootersubsytem. */
   public ShooterSubsytem() {
@@ -47,6 +51,9 @@ public class ShooterSubsytem extends SubsystemBase {
     m_shooterWheel.setNeutralMode(NeutralModeValue.Coast);
 
     stopShooter();
+
+    var topic = m_networkTable.networkTable().getDoubleTopic("April Tag Distance");
+    m_aprilTagDistancePub = topic.publish();
   }
 
   int m_ticks = 0;
@@ -82,6 +89,7 @@ public class ShooterSubsytem extends SubsystemBase {
 
   private void dashboardUpdate() {
     m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) -> setVelocity(t), (b) -> {});
+    m_aprilTagDistancePub.set(AprilTagHelpers.distanceToTarget());
   }
 
   public void shooterToIdle(){
