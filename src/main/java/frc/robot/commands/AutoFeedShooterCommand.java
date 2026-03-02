@@ -15,8 +15,6 @@ public class AutoFeedShooterCommand extends Command {
   private final ShooterSubsytem m_shooterSubsytem;
   private final TurretSubsystem m_turretSubsystem;
 
-  private boolean m_isAtVelocity;
-
   /** Creates a new FeedShooterCommand. */
   public AutoFeedShooterCommand(FeederSubsystem feederSubsystem, ShooterSubsytem shooterSubsytem,
       TurretSubsystem turretSubsystem) {
@@ -35,28 +33,10 @@ public class AutoFeedShooterCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    switch (m_shooterSubsytem.getShooterState()) {
-      case PreptoShoot:
-        if (!m_isAtVelocity) {
-          m_isAtVelocity = m_shooterSubsytem.isAtVelocity();
-        }
-        if (m_isAtVelocity && m_turretSubsystem.isAtAngle()) {
-          if (m_shooterSubsytem.getShooterState() == ShooterStateType.PreptoShoot) {
-            m_feederSubsystem.startFeeder();
-            m_shooterSubsytem.setShooterState(ShooterStateType.Shooting);
-          }
-        }
-        break;
-      case Shooting:
-        if (!m_turretSubsystem.isAtAngle()) {
-          m_feederSubsystem.stopFeeder();
-          m_shooterSubsytem.setShooterState(ShooterStateType.PreptoShoot);
-        }
-        break;
-      // any other state
-      default:
-        m_isAtVelocity = false;
-        break;
+    if (m_shooterSubsytem.getShooterState() == ShooterStateType.PreptoShoot &&
+        m_shooterSubsytem.isAtVelocity() && m_turretSubsystem.isAtAngle()) {
+      m_feederSubsystem.startFeeder();
+      m_shooterSubsytem.setShooterState(ShooterStateType.Shooting);
     }
   }
 
@@ -64,7 +44,6 @@ public class AutoFeedShooterCommand extends Command {
   @Override
   public void end(boolean interrupted) {
     m_feederSubsystem.stopFeeder();
-    m_isAtVelocity = false;
   }
 
   // Returns true when the command should end.

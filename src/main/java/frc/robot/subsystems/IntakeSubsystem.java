@@ -126,6 +126,15 @@ public class IntakeSubsystem extends SubsystemBase {
     dashboardUpdate();
   }
 
+  private void dashboardUpdate() {
+    m_IntakeSpeed = m_IntakeSpeedSub.get();
+    m_reverseIntakeSpeed = m_ReverseIntakeSpeedSub.get();
+
+    m_networkTable.dashboardUpdate(m_extendIntakeMotor, m_extendEncoder,
+        m_extendConfig, (t) -> setExtendPosition(t),
+        (b) -> moreMotorUpdates());
+  }
+
   private void startIntake() {
     m_intakeMotor.set(m_IntakeSpeed);
   }
@@ -171,15 +180,6 @@ public class IntakeSubsystem extends SubsystemBase {
       setExtendPosition(ExtendIntakePositionType.Retracted);
       stopIntake();
     } , this);
-  }
-
-  public void dashboardUpdate() {
-    m_IntakeSpeed = m_IntakeSpeedSub.get();
-    m_reverseIntakeSpeed = m_ReverseIntakeSpeedSub.get();
-
-    m_networkTable.dashboardUpdate(m_extendIntakeMotor, m_extendEncoder,
-        m_extendConfig, (t) -> setExtendPosition(t),
-        (b) -> moreMotorUpdates());
   }
 
   private void moreMotorUpdates() {

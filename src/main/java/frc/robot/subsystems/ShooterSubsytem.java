@@ -35,17 +35,14 @@ public class ShooterSubsytem extends SubsystemBase
   private TalonFX m_shooterWheel = new TalonFX(RobotMap.kShooterFollowerWheelkraken);
   private TalonFX m_shooterFollowerWheel = new TalonFX(RobotMap.kShooterFollowerWheelkraken);
   private Slot0Configs m_slot0Configs = new Slot0Configs();
+  private VelocityVoltage m_velocityVoltage;
+  private final PidValuesRecord pidValues = new PidValuesRecord(1.0, 0.0, 0);
 
   // https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/VelocityClosedLoop/src/main/java/frc/robot/Robot.java
   /* Keep a brake request so we can disable the motor */
   private final NeutralOut m_brake = new NeutralOut();
 
-  private VelocityVoltage m_velocityVoltage;
-
-  private static final PidValuesRecord pidValues = new PidValuesRecord(1.0, 0.0, 0);
-
   private final KrakenPidNetworkTableHelper m_networkTable = new KrakenPidNetworkTableHelper("Shooter", pidValues);
-
   private final DoublePublisher m_aprilTagDistancePub;
 
   private ShooterStateType m_ShooterState = ShooterStateType.Off;
@@ -84,7 +81,8 @@ public class ShooterSubsytem extends SubsystemBase
     if (m_ticks % 15 != 11)
       return;
 
-    dashboardUpdate();
+    m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) -> setVelocity(t), (b) -> {});
+    m_aprilTagDistancePub.set(AprilTagShooterHelpers.distanceToTarget());
   }
 
   public void stopShooter() {
@@ -102,12 +100,6 @@ public class ShooterSubsytem extends SubsystemBase
     m_requestedVelocity = target;
     // current units are rotations per second
     m_shooterWheel.setControl(m_velocityVoltage.withVelocity(target));
-    // m_shooterWheel.setControl(m_positionTorque.withPosition(bottom));
-  }
-
-  private void dashboardUpdate() {
-    m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) -> setVelocity(t), (b) -> {});
-    m_aprilTagDistancePub.set(AprilTagShooterHelpers.distanceToTarget());
   }
 
   public Command shooterToIdleCommand() {
@@ -128,6 +120,6 @@ public class ShooterSubsytem extends SubsystemBase
   }
 
   public boolean isAtVelocity(){
-    return Math.abs(m_requestedVelocity - m_shooterWheel.getVelocity().getValueAsDouble()) < 0.5;
+    return m_shooterWheel.getVelocity().getValueAsDouble() - m_requestedVelocity > 1.0;
   }
 }
