@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import frc.robot.commands.AutoFeedShooterCommand;
 import frc.robot.commands.ShooterVelocityfromDistanceCommand;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.commands.TurretAutoTargetCommand;
@@ -14,11 +15,10 @@ import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsytem;
 import frc.robot.subsystems.TurretSubsystem;
-import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
 import frc.robot.subsystems.ClimbExtendSubsystem;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
@@ -63,9 +63,7 @@ public class RobotContainer {
     //     }));
 
     m_rightJoystick.button(RobotMap.kRightResetNavXButton).onTrue(
-        new InstantCommand(() -> {
-          m_driveSubsystem.resetNavX();
-        }, m_driveSubsystem));
+        new InstantCommand(() -> {m_driveSubsystem.resetNavX();}, m_driveSubsystem));
     m_leftJoystick.button(RobotMap.kLeftLockWheels).whileTrue(m_driveSubsystem.lockWheelsCommand());
 
     m_buttonBox.button(RobotMap.kExtendIntake)
@@ -76,20 +74,19 @@ public class RobotContainer {
     m_buttonBox.button(RobotMap.kReverseIntake).whileTrue(m_intakeSubsystem.reverseIntakeCommand());
     m_buttonBox.button(RobotMap.kToggleHopper).toggleOnTrue(m_hopperSubsystem.toggleHopperCommand());
     m_buttonBox.button(RobotMap.kReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
+    m_buttonBox.button(RobotMap.kFeedShooter).whileTrue(
+      new StartEndCommand(() -> m_FeederSubsystem.startFeeder(), () -> m_FeederSubsystem.stopFeeder(), m_FeederSubsystem));
+    m_buttonBox.button(RobotMap.kReverseFeeder).whileTrue(m_FeederSubsystem.reverseFeederCommand());
 
     m_buttonBox.button(RobotMap.kFire).onTrue(
       new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem)
-      .alongWith(m_hopperSubsystem.startHopperCommand()));
-    m_buttonBox.button(RobotMap.kStopFire).onTrue(
-      m_FeederSubsystem.stopfeederCommand()
-      .alongWith(m_ShooterSubsytem.shooterToIdleCommand()));
-
-    Trigger startFeederTrigger = new Trigger(() -> m_ShooterSubsytem.getShooterState() == ShooterStateType.Shooting);
-    startFeederTrigger.onTrue(m_FeederSubsystem.startfeederCommand());
-    Trigger atVelocityTrigger = new Trigger(() -> m_ShooterSubsytem.isAtVelocity());
-    Trigger atAngleTrigger = new Trigger(() -> m_turretSubsystem.isAtAngle());
-    atVelocityTrigger.and(atAngleTrigger).onTrue(
-      new InstantCommand(() -> m_ShooterSubsytem.setShooterState(ShooterStateType.Shooting)));
+      .alongWith(m_hopperSubsystem.startHopperCommand())
+      .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
+    m_buttonBox.button(RobotMap.kStopFire).onTrue(m_ShooterSubsytem.shooterToIdleCommand()
+      .andThen(new InstantCommand(() -> {
+        if(m_intakeSubsystem.isRetracted())
+          m_hopperSubsystem.stopHopper();
+      })));
   }
 
   public double getDriveXInput() {

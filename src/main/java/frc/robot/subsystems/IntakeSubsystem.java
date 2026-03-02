@@ -187,4 +187,8 @@ public class IntakeSubsystem extends SubsystemBase {
     var maxOutput = m_maxOutputSub.get();
     m_extendConfig.closedLoop.outputRange(-maxOutput, maxOutput);
   }
+
+  public boolean isRetracted(){
+    return m_extendEncoder.getPosition() < 1;
+  }
 }

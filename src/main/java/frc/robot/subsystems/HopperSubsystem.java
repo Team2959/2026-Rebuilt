@@ -56,7 +56,7 @@ public class HopperSubsystem extends SubsystemBase {
     dashboardUpdate();
   }
 
-  private void stopHopper() {
+  public void stopHopper() {
     m_HopperMotor.set(0);
   }
 

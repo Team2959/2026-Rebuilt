@@ -100,6 +100,6 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public boolean isAtAngle(){
-    return false;
+    return Math.abs(m_requestedAngle - m_turretEncoder.getPosition()) < 3;
   }
 }

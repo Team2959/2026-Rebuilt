@@ -54,7 +54,7 @@ public class FeederSubsystem extends SubsystemBase {
     dashboardUpdate();
   }
 
-  private void stopFeeder() {
+  public void stopFeeder() {
     m_FeederMotor.set(0);
   }
 
@@ -62,11 +62,11 @@ public class FeederSubsystem extends SubsystemBase {
     return new InstantCommand(() -> stopFeeder(), this);
   }
 
-  private void startFeeder() {
+  public void startFeeder() {
     m_FeederMotor.set(m_FeederSpeed);
   }
 
-  public Command startfeederCommand() {
+  public Command startFeederCommand() {
     return new InstantCommand(() -> startFeeder(), this);
   }
 
@@ -74,7 +74,7 @@ public class FeederSubsystem extends SubsystemBase {
     m_FeederMotor.set(-m_FeederSpeed / 2.0);
   }
 
-  public Command reverseHopperCommand() {
+  public Command reverseFeederCommand() {
     return new StartEndCommand(() -> reverseFeeder(), () -> stopFeeder(), this);
   }
 

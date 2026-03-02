@@ -8,7 +8,6 @@ import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.StrictFollower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -50,6 +49,7 @@ public class ShooterSubsytem extends SubsystemBase
   private final DoublePublisher m_aprilTagDistancePub;
 
   private ShooterStateType m_ShooterState = ShooterStateType.Off;
+  private double m_requestedVelocity;
 
   /** Creates a new Shootersubsytem. */
   public ShooterSubsytem() {
@@ -93,15 +93,15 @@ public class ShooterSubsytem extends SubsystemBase
 
   public void setVelocityfromDistance(double distance) {
     // ToDo: converts distance to velocity for accuracy
-    var velocity = 1500 + 50 * distance;
+    var velocity = 5 + 25 * distance;
     // command each motor to control to the desired velocity
     setVelocity(velocity);
   }
 
   private void setVelocity(double target) {
+    m_requestedVelocity = target;
     // current units are rotations per second
     m_shooterWheel.setControl(m_velocityVoltage.withVelocity(target));
-
     // m_shooterWheel.setControl(m_positionTorque.withPosition(bottom));
   }
 
@@ -128,6 +128,6 @@ public class ShooterSubsytem extends SubsystemBase
   }
 
   public boolean isAtVelocity(){
-    return false;
+    return Math.abs(m_requestedVelocity - m_shooterWheel.getVelocity().getValueAsDouble()) < 0.5;
   }
 }

@@ -56,6 +56,8 @@ public final class RobotMap {
     public static final int kReverseIntake = 1;
     public static final int kToggleHopper = 11;
     public static final int kReverseHopper = 6;
+    public static final int kFeedShooter = 2;
+    public static final int kReverseFeeder = 4;
 
     // Zeroed values, should be in radians
     // source is google document in Electrical for team - module data
