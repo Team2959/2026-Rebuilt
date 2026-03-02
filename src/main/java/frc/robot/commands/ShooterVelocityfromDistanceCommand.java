@@ -7,7 +7,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ShooterSubsytem;
 import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
-import frc.robot.vision.AprilTagHelpers;
+import frc.robot.vision.AprilTagShooterHelpers;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ShooterVelocityfromDistanceCommand extends Command {
@@ -32,7 +32,7 @@ public class ShooterVelocityfromDistanceCommand extends Command {
   public void execute() {
     // get distance frame april tags
     // feed distance to shooter
-    m_ShooterSubsytem.setVelocityfromDistance(AprilTagHelpers.distanceToTarget());
+    m_ShooterSubsytem.setVelocityfromDistance(AprilTagShooterHelpers.distanceToTarget());
   }
 
   // Called once the command ends or is interrupted.

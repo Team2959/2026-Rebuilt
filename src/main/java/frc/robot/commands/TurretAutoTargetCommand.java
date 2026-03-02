@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.TurretSubsystem;
-import frc.robot.vision.AprilTagHelpers;
+import frc.robot.vision.AprilTagShooterHelpers;
 
 public class TurretAutoTargetCommand extends Command {
   private final TurretSubsystem m_turretSubsystem;
@@ -31,7 +31,7 @@ public class TurretAutoTargetCommand extends Command {
   @Override
   public void execute() {
     // ToDo: be able to target more than just the hub
-    var target = AprilTagHelpers.turretAngleToTarget(m_robotAngleSupplier.get());
+    var target = AprilTagShooterHelpers.turretAngleToTarget(m_robotAngleSupplier.get());
     if (Double.isNaN(target))
       return;
     m_turretSubsystem.goToTargetAngle(target);

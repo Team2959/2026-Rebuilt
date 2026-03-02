@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.NeoPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
-import frc.robot.vision.AprilTagHelpers;
+import frc.robot.vision.AprilTagShooterHelpers;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -76,7 +76,7 @@ public class TurretSubsystem extends SubsystemBase {
     m_networkTable.dashboardUpdate(m_turretMotor, m_turretEncoder, m_turretConfig,
         (t) -> goToTargetAngle(t),
         (b) -> {});
-    m_aprilTagTargetPub.set(AprilTagHelpers.turretAngleToTarget(0));
+    m_aprilTagTargetPub.set(AprilTagShooterHelpers.turretAngleToTarget(0));
   }
 
   public void stopTurret() {

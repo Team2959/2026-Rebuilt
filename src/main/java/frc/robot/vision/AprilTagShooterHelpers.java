@@ -8,7 +8,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DriverStation;
 
 /** Add your docs here. */
-public class AprilTagHelpers {
+public class AprilTagShooterHelpers {
     private final static double hubX = 4.636;
     private final static double hubY = 4.0;
     private final static double leftBumpX = 4.2;

@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.KrakenPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
-import frc.robot.vision.AprilTagHelpers;
+import frc.robot.vision.AprilTagShooterHelpers;
 
 public class ShooterSubsytem extends SubsystemBase 
 {
@@ -107,7 +107,7 @@ public class ShooterSubsytem extends SubsystemBase
 
   private void dashboardUpdate() {
     m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) -> setVelocity(t), (b) -> {});
-    m_aprilTagDistancePub.set(AprilTagHelpers.distanceToTarget());
+    m_aprilTagDistancePub.set(AprilTagShooterHelpers.distanceToTarget());
   }
 
   public Command shooterToIdleCommand() {
