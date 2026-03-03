@@ -16,6 +16,13 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsytem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.ClimbExtendSubsystem;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
@@ -42,11 +49,18 @@ public class RobotContainer {
 
   private final Robot m_robot;
 
+  private final SendableChooser<Command> m_autoChooser;
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer(Robot robot) {
     m_robot = robot;
+
+    // path planner auto set up
+    createNamedCommandsForAutos();
+    m_autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser", m_autoChooser);
 
     // Configure the trigger bindings
     configureBindings();
@@ -58,35 +72,29 @@ public class RobotContainer {
         () -> m_robot.isTeleopEnabled()));
 
     // m_turretSubsystem.setDefaultCommand(new TurretAutoTarget(m_turretSubsystem,
-    //     () -> {
-    //       return m_driveSubsystem.getAngle().getDegrees();
-    //     }));
+    // () -> {
+    // return m_driveSubsystem.getAngle().getDegrees();
+    // }));
 
     m_rightJoystick.button(RobotMap.kRightResetNavXButton).onTrue(
-        new InstantCommand(() -> {m_driveSubsystem.resetNavX();}, m_driveSubsystem));
+        new InstantCommand(() -> {
+          m_driveSubsystem.resetNavX();
+        }, m_driveSubsystem));
     m_leftJoystick.button(RobotMap.kLeftLockWheels).whileTrue(m_driveSubsystem.lockWheelsCommand());
 
-    m_buttonBox.button(RobotMap.kExtendIntake)
-      .onTrue(m_intakeSubsystem.extendIntakeCommand()
-        .andThen(m_hopperSubsystem.startHopperCommand()));
+    m_buttonBox.button(RobotMap.kExtendIntake).onTrue(extendIntakeCommand());
     m_buttonBox.button(RobotMap.kRetractIntake).onTrue(m_intakeSubsystem.retractIntakeCommand());
     m_buttonBox.button(RobotMap.kToggleIntake).toggleOnTrue(m_intakeSubsystem.toggleIntakeCommand());
     m_buttonBox.button(RobotMap.kReverseIntake).whileTrue(m_intakeSubsystem.reverseIntakeCommand());
     m_buttonBox.button(RobotMap.kToggleHopper).toggleOnTrue(m_hopperSubsystem.toggleHopperCommand());
     m_buttonBox.button(RobotMap.kReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
     m_buttonBox.button(RobotMap.kFeedShooter).whileTrue(
-      new StartEndCommand(() -> m_FeederSubsystem.startFeeder(), () -> m_FeederSubsystem.stopFeeder(), m_FeederSubsystem));
+        new StartEndCommand(() -> m_FeederSubsystem.startFeeder(), () -> m_FeederSubsystem.stopFeeder(),
+            m_FeederSubsystem));
     m_buttonBox.button(RobotMap.kReverseFeeder).whileTrue(m_FeederSubsystem.reverseFeederCommand());
 
-    m_buttonBox.button(RobotMap.kFire).onTrue(
-      new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem)
-      .alongWith(m_hopperSubsystem.startHopperCommand())
-      .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
-    m_buttonBox.button(RobotMap.kStopFire).onTrue(m_ShooterSubsytem.shooterToIdleCommand()
-      .andThen(new InstantCommand(() -> {
-        if(m_intakeSubsystem.isRetracted())
-          m_hopperSubsystem.stopHopper();
-      })));
+    m_buttonBox.button(RobotMap.kFire).onTrue(startShootingCommand());
+    m_buttonBox.button(RobotMap.kStopFire).onTrue(stopShootingCommand());
   }
 
   public double getDriveXInput() {
@@ -113,5 +121,34 @@ public class RobotContainer {
     // m_speedMultiplier = m_speedSub.get();
 
     m_driveSubsystem.initialize();
+  }
+
+  private Command startShootingCommand() {
+    return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem)
+        .alongWith(m_hopperSubsystem.startHopperCommand())
+        .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem));
+  }
+
+  private Command stopShootingCommand() {
+    return m_ShooterSubsytem.shooterToIdleCommand()
+        .andThen(new InstantCommand(() -> {
+          if (m_intakeSubsystem.isRetracted())
+            m_hopperSubsystem.stopHopper();
+        }));
+  }
+
+  private Command extendIntakeCommand() {
+    return m_intakeSubsystem.extendIntakeCommand()
+        .andThen(m_hopperSubsystem.startHopperCommand());
+  }
+
+  private void createNamedCommandsForAutos() {
+    NamedCommands.registerCommand("Start Shooting", startShootingCommand());
+    NamedCommands.registerCommand("Stop Shooting", stopShootingCommand());
+    NamedCommands.registerCommand("Extend Intake", extendIntakeCommand());
+  }
+
+  public Command getAutonomousCommand() {
+    return m_autoChooser.getSelected();
   }
 }
