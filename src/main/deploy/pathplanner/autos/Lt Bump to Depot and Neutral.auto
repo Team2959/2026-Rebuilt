@@ -26,13 +26,38 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Rt Trench Neutral Intake"
+            "pathName": "Lt Bump to Depot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot Full Hopper"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Depot to Lt Trench"
+                }
+              }
+            ]
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Return to Rt Trench"
+            "pathName": "Lt Trench to Neutral Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Return to Lt Trench"
           }
         },
         {

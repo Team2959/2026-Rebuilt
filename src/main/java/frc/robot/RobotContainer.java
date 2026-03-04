@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 
 public class RobotContainer {
@@ -142,7 +143,14 @@ public class RobotContainer {
         .andThen(m_hopperSubsystem.startHopperCommand());
   }
 
+  private Command startAndStopShooting(double durationInSeconds) {
+    return startShootingCommand()
+        .alongWith(new WaitCommand(durationInSeconds).andThen(stopShootingCommand()));
+  }
+
   private void createNamedCommandsForAutos() {
+    NamedCommands.registerCommand("Shoot First 8", startAndStopShooting(2));
+    NamedCommands.registerCommand("Shoot Full Hopper", startAndStopShooting(5));
     NamedCommands.registerCommand("Start Shooting", startShootingCommand());
     NamedCommands.registerCommand("Stop Shooting", stopShootingCommand());
     NamedCommands.registerCommand("Extend Intake", extendIntakeCommand());

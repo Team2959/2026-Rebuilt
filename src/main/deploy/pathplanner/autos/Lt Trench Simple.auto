@@ -26,13 +26,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Rt Trench Neutral Intake"
+            "pathName": "Lt Trench to Neutral Intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Return to Rt Trench"
+            "pathName": "Return to Lt Trench"
           }
         },
         {
