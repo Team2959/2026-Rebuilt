@@ -32,7 +32,7 @@ public class TurretSubsystem extends SubsystemBase {
   private static final double kStatic = 0.18;
   private static final PidValuesRecord pidValues = new PidValuesRecord(0.015, 0, 0);
 
-  private final double kMaxTurretAngle = 110;
+  private final double kMaxTurretAngle = 90;
   private final double kMinTurrentAngle = -kMaxTurretAngle;
   private double m_requestedAngle = 0;
 
