@@ -15,7 +15,6 @@ import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsytem;
 import frc.robot.subsystems.TurretSubsystem;
-import frc.robot.subsystems.ClimbExtendSubsystem;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -36,8 +35,6 @@ public class RobotContainer {
   private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
   private final ShooterSubsytem m_ShooterSubsytem = new ShooterSubsytem();
   private final TurretSubsystem m_turretSubsystem = new TurretSubsystem();
-  // private final ClimbExtendSubsystem m_climbExtendSubsystem = new
-  // ClimbExtendSubsystem();
 
   private final Conditioning m_driveXConditioning = new Conditioning();
   private final Conditioning m_driveYConditioning = new Conditioning();
@@ -73,9 +70,9 @@ public class RobotContainer {
         () -> m_robot.isTeleopEnabled()));
 
     m_turretSubsystem.setDefaultCommand(new TurretAutoTargetCommand(m_turretSubsystem,
-    () -> {
-    return m_driveSubsystem.getAngle().getDegrees();
-    }));
+        () -> {
+          return m_driveSubsystem.getAngle().getDegrees();
+        }));
 
     m_rightJoystick.button(RobotMap.kRightResetNavXButton).onTrue(
         new InstantCommand(() -> {
@@ -127,7 +124,7 @@ public class RobotContainer {
   private Command startShootingCommand() {
     return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem)
         .alongWith(m_hopperSubsystem.startHopperCommand()
-        .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
+            .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
   }
 
   private Command stopShootingCommand() {
