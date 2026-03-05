@@ -5,11 +5,13 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -22,18 +24,16 @@ import frc.robot.robotarians.KrakenPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
 import frc.robot.vision.AprilTagShooterHelpers;
 
-public class ShooterSubsytem extends SubsystemBase 
-{
- public enum ShooterStateType
- {
-  Off,
-  Idle,
-  PreptoShoot,
-  Shooting
- }
+public class ShooterSubsytem extends SubsystemBase {
+  public enum ShooterStateType {
+    Off,
+    Idle,
+    PreptoShoot,
+    Shooting
+  }
 
-  private TalonFX m_shooterWheel = new TalonFX(RobotMap.kShooterFollowerWheelkraken);
-  private TalonFX m_shooterFollowerWheel = new TalonFX(RobotMap.kShooterFollowerWheelkraken);
+  private TalonFX m_shooterWheel = new TalonFX(RobotMap.kShooterPrimaryWheelkraken);
+  private TalonFX m_shooterFollowerWheel = new TalonFX(RobotMap.kShooterPrimaryWheelkraken);
   private Slot0Configs m_slot0Configs = new Slot0Configs();
   private VelocityVoltage m_velocityVoltage;
   private final PidValuesRecord pidValues = new PidValuesRecord(1.0, 0.0, 0);
@@ -61,9 +61,12 @@ public class ShooterSubsytem extends SubsystemBase
     m_shooterWheel.getConfigurator().apply(m_slot0Configs);
     m_shooterWheel.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
     m_shooterWheel.setNeutralMode(NeutralModeValue.Coast);
+    MotorOutputConfigs motorConfigs = new MotorOutputConfigs();
+    motorConfigs.withInverted(InvertedValue.Clockwise_Positive);
+    m_shooterWheel.getConfigurator().apply(motorConfigs);
 
     m_shooterFollowerWheel.setNeutralMode(NeutralModeValue.Coast);
-    m_shooterFollowerWheel.setControl(new Follower(RobotMap.kShooterFollowerWheelkraken, MotorAlignmentValue.Opposed));
+    m_shooterFollowerWheel.setControl(new Follower(RobotMap.kShooterPrimaryWheelkraken, MotorAlignmentValue.Opposed));
 
     stopShooter();
 
@@ -81,7 +84,8 @@ public class ShooterSubsytem extends SubsystemBase
     if (m_ticks % 15 != 11)
       return;
 
-    m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) -> setVelocity(t), (b) -> {});
+    m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) -> setVelocity(t), (b) -> {
+    });
     m_aprilTagDistancePub.set(AprilTagShooterHelpers.distanceToTarget());
   }
 
@@ -90,8 +94,7 @@ public class ShooterSubsytem extends SubsystemBase
   }
 
   public void setVelocityfromDistance(double distance) {
-    // ToDo: converts distance to velocity for accuracy
-    var velocity = 5 + 25 * distance;
+    var velocity = velocityFromDistance(distance);
     // command each motor to control to the desired velocity
     setVelocity(velocity);
   }
@@ -103,23 +106,48 @@ public class ShooterSubsytem extends SubsystemBase
   }
 
   public Command shooterToIdleCommand() {
-    return new InstantCommand(() -> shooterToIdle(), this);
+    return new InstantCommand(() -> shooterToIdle());
   }
 
-  public void shooterToIdle(){
+  public void shooterToIdle() {
     setVelocity(5.0);
     setShooterState(ShooterStateType.Idle);
   }
 
-  public ShooterStateType getShooterState(){
+  public ShooterStateType getShooterState() {
     return m_ShooterState;
   }
 
-  public void setShooterState(ShooterStateType newState){
+  public void setShooterState(ShooterStateType newState) {
     m_ShooterState = newState;
   }
 
-  public boolean isAtVelocity(){
+  public boolean isAtVelocity() {
     return m_shooterWheel.getVelocity().getValueAsDouble() - m_requestedVelocity > 1.0;
+  }
+
+  private double velocityFromDistance(double distance) {
+    if (distance <= 2)
+      return 41.5;
+    var lowerSpeed = 41.5;
+    var upperSpeed = 46.0;
+    var lowerDistance = 2.0;
+    if (distance >= 4) {
+      return 65;
+    } else if (distance >= 3.5) {
+      lowerSpeed = 55;
+      lowerDistance = 3.5;
+    } else if (distance >= 3) {
+      lowerSpeed = 47;
+      upperSpeed = 55;
+      lowerDistance = 3;
+    } else if (distance >= 2.5) {
+      lowerSpeed = 46;
+      upperSpeed = 47;
+      lowerDistance = 2.5;
+    }
+
+    var deltaSpeed = upperSpeed - lowerSpeed;
+    return lowerSpeed + (distance - lowerDistance) * deltaSpeed / 0.5;
   }
 }

@@ -30,7 +30,7 @@ public class TurretSubsystem extends SubsystemBase {
   private final SparkMaxConfig m_turretConfig;
 
   private static final double kStatic = 0.18;
-  private static final PidValuesRecord pidValues = new PidValuesRecord(0.015, 0, 0);
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.005, 0, 0);
 
   private final double kMaxTurretAngle = 90;
   private final double kMinTurrentAngle = -kMaxTurretAngle;
@@ -44,10 +44,10 @@ public class TurretSubsystem extends SubsystemBase {
     m_turretEncoder = (SparkRelativeEncoder) m_turretMotor.getEncoder();
     m_turretController = m_turretMotor.getClosedLoopController();
     m_turretConfig = new SparkMaxConfig();
-    m_turretConfig.idleMode(IdleMode.kCoast).inverted(true);
+    m_turretConfig.idleMode(IdleMode.kBrake).inverted(true);
 
     // measured on turret that it took 25.6 motor rotations to turn 360 degrees
-    m_turretConfig.encoder.positionConversionFactor(25.6 / 360.0);
+    m_turretConfig.encoder.positionConversionFactor(360.0 / 25.6);
     m_turretConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pid(pidValues.kP(), pidValues.kI(), pidValues.kD());

@@ -72,10 +72,10 @@ public class RobotContainer {
         () -> getDriveXInput(), () -> getDriveYInput(), () -> getTurnInput(),
         () -> m_robot.isTeleopEnabled()));
 
-    // m_turretSubsystem.setDefaultCommand(new TurretAutoTarget(m_turretSubsystem,
-    // () -> {
-    // return m_driveSubsystem.getAngle().getDegrees();
-    // }));
+    m_turretSubsystem.setDefaultCommand(new TurretAutoTargetCommand(m_turretSubsystem,
+    () -> {
+    return m_driveSubsystem.getAngle().getDegrees();
+    }));
 
     m_rightJoystick.button(RobotMap.kRightResetNavXButton).onTrue(
         new InstantCommand(() -> {
@@ -126,8 +126,8 @@ public class RobotContainer {
 
   private Command startShootingCommand() {
     return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem)
-        .alongWith(m_hopperSubsystem.startHopperCommand())
-        .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem));
+        .alongWith(m_hopperSubsystem.startHopperCommand()
+        .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
   }
 
   private Command stopShootingCommand() {

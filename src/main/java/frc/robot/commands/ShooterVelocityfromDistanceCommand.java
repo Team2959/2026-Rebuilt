@@ -44,6 +44,7 @@ public class ShooterVelocityfromDistanceCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    var state = m_ShooterSubsytem.getShooterState();
+    return state != ShooterStateType.PreptoShoot && state != ShooterStateType.Shooting;
   }
 }
