@@ -30,7 +30,8 @@ public class TurretSubsystem extends SubsystemBase {
   private final SparkMaxConfig m_turretConfig;
 
   private static final double kStatic = 0.18;
-  private static final PidValuesRecord pidValues = new PidValuesRecord(0.005, 0, 0);
+  // initial testing had kP 0.015, but jerky at end
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.007, 0, 0);
 
   private final double kMaxTurretAngle = 90;
   private final double kMinTurrentAngle = -kMaxTurretAngle;

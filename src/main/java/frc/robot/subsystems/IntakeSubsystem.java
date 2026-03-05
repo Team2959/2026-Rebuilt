@@ -12,6 +12,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 
@@ -52,7 +53,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
   // power and current limiting
   private static final int kExtendCurrentLimitAmps = 20;
-  private static final double kExtendMaxOutput = 0.35;
   // following Rev's arm kS and kG voltage measurements for feed forward
   // https://docs.revrobotics.com/revlib/spark/closed-loop/feed-forward-control
   //   V1 = 0.45; V2 = 0.15
@@ -61,9 +61,13 @@ public class IntakeSubsystem extends SubsystemBase {
   private static final double kStatic = 0.15;
   private static final double kCosG = 0.3;
   private static final double kCosRatio = 29.97; // motor 9:1 * gears = 29.97
-  private static final PidValuesRecord pidValues = new PidValuesRecord(0.035, 0.0, 0);
+  // kP was 0.15 in initial testing
+  private static final PidValuesRecord retactPidValues = new PidValuesRecord(0.035, 0.0, 0);
+  // kSlot1 for extending with more power, separate tuning
+  private static final PidValuesRecord extendPidValues = new PidValuesRecord(0.07, 0.0, 0);
+  private static final double kExtendMaxOutput = 0.35;  // was 0.5 in initial testing
 
-  private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Intake Extend", pidValues);
+  private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Intake Extend", retactPidValues);
   private final IntegerSubscriber m_currentLimitSub;
   private final DoubleSubscriber m_maxOutputSub;
 
@@ -84,7 +88,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     m_extendConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .pid(pidValues.kP(), pidValues.kI(), pidValues.kD())
+        .pid(retactPidValues.kP(), retactPidValues.kI(), retactPidValues.kD())
+        .pid(extendPidValues.kP(), extendPidValues.kI(), extendPidValues.kD(), ClosedLoopSlot.kSlot1)
         .outputRange(-kExtendMaxOutput, kExtendMaxOutput);
     m_extendConfig.closedLoop.feedForward.kS(kStatic).kCos(kCosG).kCosRatio(kCosRatio);
     m_extendIntakeMotor.configure(m_extendConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -159,11 +164,11 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private void setExtendPosition(ExtendIntakePositionType target) {
-    var newPosition = 0.0;
     if (target == ExtendIntakePositionType.Extended) {
-      newPosition = defaultExtendedPosition;
+      m_extendController.setSetpoint(defaultExtendedPosition, ControlType.kPosition, ClosedLoopSlot.kSlot1);
+      return;
     }
-    setExtendPosition(newPosition);
+    setExtendPosition(0);
   }
 
   public Command extendIntakeCommand() {
