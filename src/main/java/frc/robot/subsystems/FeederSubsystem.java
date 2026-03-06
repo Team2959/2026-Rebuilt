@@ -48,10 +48,10 @@ public class FeederSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
 
-    m_ticks++;
-    if (m_ticks % 19 != 19)
-      return;
-    dashboardUpdate();
+    // m_ticks++;
+    // if (m_ticks % 19 != 19)
+    //   return;
+    // dashboardUpdate();
   }
 
   public void stopFeeder() {

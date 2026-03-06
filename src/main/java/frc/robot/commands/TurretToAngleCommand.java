@@ -4,48 +4,43 @@
 
 package frc.robot.commands;
 
-import java.util.function.Supplier;
-
 import edu.wpi.first.wpilibj2.command.Command;
+
 import frc.robot.subsystems.TurretSubsystem;
-import frc.robot.vision.AprilTagShooterHelpers;
 
-public class TurretAutoTargetCommand extends Command {
-  private final TurretSubsystem m_turretSubsystem;
-  private Supplier<Double> m_robotAngleSupplier;
+/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
+public class TurretToAngleCommand extends Command {
+  TurretSubsystem m_turretSubsystem;
+  double m_target;
 
-  /** Creates a new TurretAutoTarget. */
-  public TurretAutoTargetCommand(TurretSubsystem turretSubsystem, Supplier<Double> robotAngle) {
+  /** Creates a new TurrettoAngleCommand. */
+  public TurretToAngleCommand(TurretSubsystem turretSubsystem, double target) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(turretSubsystem);
     m_turretSubsystem = turretSubsystem;
-    m_robotAngleSupplier = robotAngle;
+    m_target = target;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    m_turretSubsystem.goToTargetAngle(m_target);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {
-    if (m_turretSubsystem.getSuspendAutoTurret()) return;
-    // ToDo: be able to target more than just the hub
-    var target = AprilTagShooterHelpers.turretAngleToTarget(m_robotAngleSupplier.get());
-    if (Double.isNaN(target))
-      return;
-    m_turretSubsystem.goToTargetAngle(target);
-  }
+  public void execute() {}
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    if (interrupted)
+      m_turretSubsystem.goToTargetAngle(m_turretSubsystem.currentAngle());
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return m_turretSubsystem.isAtAngle();
   }
 }

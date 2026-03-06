@@ -36,6 +36,7 @@ public class TurretSubsystem extends SubsystemBase {
   private final double kMaxTurretAngle = 90;
   private final double kMinTurrentAngle = -kMaxTurretAngle;
   private double m_requestedAngle = 0;
+  private boolean m_suspendAutoTurret;
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
   private final DoublePublisher m_aprilTagTargetPub;
@@ -100,6 +101,18 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public boolean isAtAngle(){
-    return Math.abs(m_requestedAngle - m_turretEncoder.getPosition()) < 3;
+    return Math.abs(m_requestedAngle - currentAngle()) < 3;
+  }
+
+  public double currentAngle(){
+    return m_turretEncoder.getPosition();
+  }
+
+  public boolean getSuspendAutoTurret(){
+    return m_suspendAutoTurret;
+  }
+
+  public void setSuspendAutoTurret(boolean suspend){
+    m_suspendAutoTurret = suspend;
   }
 }

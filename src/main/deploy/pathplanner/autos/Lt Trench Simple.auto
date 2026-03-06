@@ -19,6 +19,12 @@
                 "data": {
                   "name": "Extend Intake"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Turret to Neg 60"
+                }
               }
             ]
           }

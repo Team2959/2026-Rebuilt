@@ -5,9 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "Shoot First 8"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot First 8"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Turret to Neg 60"
+                }
+              }
+            ]
           }
         },
         {

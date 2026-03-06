@@ -8,6 +8,7 @@ import frc.robot.commands.AutoFeedShooterCommand;
 import frc.robot.commands.ShooterVelocityfromDistanceCommand;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.commands.TurretAutoTargetCommand;
+import frc.robot.commands.TurretToAngleCommand;
 import frc.robot.robotarians.Conditioning;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.FeederSubsystem;
@@ -90,6 +91,8 @@ public class RobotContainer {
         new StartEndCommand(() -> m_FeederSubsystem.startFeeder(), () -> m_FeederSubsystem.stopFeeder(),
             m_FeederSubsystem));
     m_buttonBox.button(RobotMap.kReverseFeeder).whileTrue(m_FeederSubsystem.reverseFeederCommand());
+    m_buttonBox.button(RobotMap.kSuspendAutoTurret).toggleOnTrue(new StartEndCommand(
+        () -> m_turretSubsystem.setSuspendAutoTurret(true), () -> m_turretSubsystem.setSuspendAutoTurret(false)));
 
     m_buttonBox.button(RobotMap.kFire).onTrue(startShootingCommand());
     m_buttonBox.button(RobotMap.kStopFire).onTrue(stopShootingCommand());
@@ -151,6 +154,8 @@ public class RobotContainer {
     NamedCommands.registerCommand("Start Shooting", startShootingCommand());
     NamedCommands.registerCommand("Stop Shooting", stopShootingCommand());
     NamedCommands.registerCommand("Extend Intake", extendIntakeCommand());
+    NamedCommands.registerCommand("Turret to Pos 60", new TurretToAngleCommand(m_turretSubsystem, 60));
+    NamedCommands.registerCommand("Turret to Neg 60", new TurretToAngleCommand(m_turretSubsystem, -60));
   }
 
   public Command getAutonomousCommand() {

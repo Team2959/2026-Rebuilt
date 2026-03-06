@@ -166,11 +166,11 @@ public class DriveSubsystem extends SubsystemBase {
     public void periodic() {
         updateOdemetry();
 
-        m_ticks++;
-        if (m_ticks % 15 != 7)
-            return;
+        // m_ticks++;
+        // if (m_ticks % 15 != 7)
+        //     return;
 
-            dashboardUpdate();
+        //     dashboardUpdate();
     }
 
     public void dashboardUpdate() {

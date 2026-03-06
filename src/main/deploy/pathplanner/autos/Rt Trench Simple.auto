@@ -19,8 +19,20 @@
                 "data": {
                   "name": "Extend Intake"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Turret to Pos 60"
+                }
               }
             ]
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
           }
         },
         {
