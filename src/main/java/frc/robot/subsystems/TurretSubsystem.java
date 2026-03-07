@@ -36,10 +36,13 @@ public class TurretSubsystem extends SubsystemBase {
   private final double kMaxTurretAngle = 90;
   private final double kMinTurrentAngle = -kMaxTurretAngle;
   private double m_requestedAngle = 0;
+  private double m_rawRequest = 0;
   private boolean m_suspendAutoTurret;
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
   private final DoublePublisher m_aprilTagTargetPub;
+  private final DoublePublisher m_requestTargetPub;
+  private final DoublePublisher m_correctedTargetPub;
 
   /** Creates a new TurretSubsystem. */
   public TurretSubsystem() {
@@ -60,7 +63,11 @@ public class TurretSubsystem extends SubsystemBase {
     // additional publisher
     var topic = m_networkTable.networkTable().getDoubleTopic("April Tag Angle");
     m_aprilTagTargetPub = topic.publish();
-    
+    var topic2 = m_networkTable.networkTable().getDoubleTopic("Requested Angle");
+    m_requestTargetPub = topic2.publish();
+    var topic3 = m_networkTable.networkTable().getDoubleTopic("Corrected 180 Angle");
+    m_correctedTargetPub = topic3.publish();
+
     goToTargetAngle(0);
   }
 
@@ -76,22 +83,35 @@ public class TurretSubsystem extends SubsystemBase {
 
     m_networkTable.dashboardUpdate(m_turretMotor, m_turretEncoder, m_turretConfig,
         (t) -> goToTargetAngle(t),
-        (b) -> {});
-    m_aprilTagTargetPub.set(AprilTagShooterHelpers.turretAngleToTarget(0));
+        (b) -> {
+        });
+    m_aprilTagTargetPub.set(AprilTagShooterHelpers.turretAngleToTarget(0, true));
+    m_requestTargetPub.set(m_rawRequest);
+    m_correctedTargetPub.set(m_requestedAngle);
   }
 
   public void stopTurret() {
     m_turretMotor.set(0);
   }
 
+  private final double kDegreeLimiter = 20.0;
+
   public void goToTargetAngle(double targetAngle) {
+    m_rawRequest = targetAngle;
     m_requestedAngle = keepAngleInOneEightySpace(targetAngle);
+    var currentAngle = currentAngle();
+    if (Math.abs(targetAngle - currentAngle) > kDegreeLimiter) {
+      if (targetAngle > currentAngle)
+        targetAngle = currentAngle + kDegreeLimiter;
+      else
+        targetAngle = currentAngle - kDegreeLimiter;
+    }
     if (m_requestedAngle < kMinTurrentAngle || m_requestedAngle > kMaxTurretAngle)
       return;
     m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
   }
 
-  private double keepAngleInOneEightySpace(double angle){
+  private double keepAngleInOneEightySpace(double angle) {
     // =IF(C20> 180, C20-360, IF(C20< -180, C20+360, C20))
     if (angle > 180)
       return angle - 360;
@@ -100,19 +120,21 @@ public class TurretSubsystem extends SubsystemBase {
     return angle;
   }
 
-  public boolean isAtAngle(){
+  public boolean isAtAngle() {
     return Math.abs(m_requestedAngle - currentAngle()) < 3;
   }
 
-  public double currentAngle(){
+  public double currentAngle() {
     return m_turretEncoder.getPosition();
   }
 
-  public boolean getSuspendAutoTurret(){
+  public boolean getSuspendAutoTurret() {
     return m_suspendAutoTurret;
   }
 
-  public void setSuspendAutoTurret(boolean suspend){
+  public void setSuspendAutoTurret(boolean suspend) {
     m_suspendAutoTurret = suspend;
+    if (suspend)
+      m_turretController.setSetpoint(0, ControlType.kPosition);
   }
 }

@@ -16,6 +16,7 @@ import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsytem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -72,7 +73,12 @@ public class RobotContainer {
 
     m_turretSubsystem.setDefaultCommand(new TurretAutoTargetCommand(m_turretSubsystem,
         () -> {
-          return m_driveSubsystem.getAngle().getDegrees();
+          // return m_driveSubsystem.getAngle().getDegrees();
+          return m_driveSubsystem.getModuloAngle();
+        },
+        () -> {
+          var state = m_ShooterSubsytem.getShooterState();
+          return state == ShooterStateType.PreptoShoot || state == ShooterStateType.Shooting;
         }));
 
     m_rightJoystick.button(RobotMap.kRightResetNavXButton).onTrue(
@@ -92,7 +98,10 @@ public class RobotContainer {
             m_FeederSubsystem));
     m_buttonBox.button(RobotMap.kReverseFeeder).whileTrue(m_FeederSubsystem.reverseFeederCommand());
     m_buttonBox.button(RobotMap.kSuspendAutoTurret).toggleOnTrue(new StartEndCommand(
-        () -> m_turretSubsystem.setSuspendAutoTurret(true), () -> m_turretSubsystem.setSuspendAutoTurret(false)));
+        () -> m_turretSubsystem.setSuspendAutoTurret(true),
+        () -> m_turretSubsystem.setSuspendAutoTurret(false)));
+    m_buttonBox.button(RobotMap.kFixedShooterSpeed).onTrue(new InstantCommand(
+        () -> m_ShooterSubsytem.setFixedShooterSpeed(true)));
 
     m_buttonBox.button(RobotMap.kFire).onTrue(startShootingCommand());
     m_buttonBox.button(RobotMap.kStopFire).onTrue(stopShootingCommand());
@@ -124,6 +133,11 @@ public class RobotContainer {
     m_driveSubsystem.initialize();
   }
 
+  public void teleOpInit(){
+    m_ShooterSubsytem.setFixedShooterSpeed(true);
+    m_turretSubsystem.setSuspendAutoTurret(true);
+  }
+
   private Command startShootingCommand() {
     return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem)
         .alongWith(m_hopperSubsystem.startHopperCommand()
@@ -133,14 +147,12 @@ public class RobotContainer {
   private Command stopShootingCommand() {
     return m_ShooterSubsytem.shooterToIdleCommand()
         .andThen(new InstantCommand(() -> {
-          if (m_intakeSubsystem.isRetracted())
-            m_hopperSubsystem.stopHopper();
+          m_hopperSubsystem.stopHopper();
         }));
   }
 
   private Command extendIntakeCommand() {
-    return m_intakeSubsystem.extendIntakeCommand()
-        .andThen(m_hopperSubsystem.startHopperCommand());
+    return m_intakeSubsystem.extendIntakeCommand();
   }
 
   private Command startAndStopShooting(double durationInSeconds) {

@@ -48,6 +48,8 @@ public class ShooterSubsytem extends SubsystemBase {
   private ShooterStateType m_ShooterState = ShooterStateType.Off;
   private double m_requestedVelocity;
 
+  private boolean m_fixedShooterSpeed;
+
   /** Creates a new Shootersubsytem. */
   public ShooterSubsytem() {
     m_velocityVoltage = new VelocityVoltage(0);
@@ -99,7 +101,7 @@ public class ShooterSubsytem extends SubsystemBase {
     setVelocity(velocity);
   }
 
-  private void setVelocity(double target) {
+  public void setVelocity(double target) {
     m_requestedVelocity = target;
     // current units are rotations per second
     m_shooterWheel.setControl(m_velocityVoltage.withVelocity(target));
@@ -110,7 +112,7 @@ public class ShooterSubsytem extends SubsystemBase {
   }
 
   public void shooterToIdle() {
-    setVelocity(5.0);
+    setVelocity(55.0);
     setShooterState(ShooterStateType.Idle);
   }
 
@@ -149,5 +151,13 @@ public class ShooterSubsytem extends SubsystemBase {
 
     var deltaSpeed = upperSpeed - lowerSpeed;
     return lowerSpeed + (distance - lowerDistance) * deltaSpeed / 0.5;
+  }
+
+   public boolean getFixedShooterSpeed(){
+        return m_fixedShooterSpeed;
+  }
+
+  public void setFixedShooterSpeed(boolean suspend){
+    m_fixedShooterSpeed = suspend;
   }
 }

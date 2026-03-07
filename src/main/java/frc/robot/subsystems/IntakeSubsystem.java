@@ -49,7 +49,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private double m_reverseIntakeSpeed = defaultReverseSpeed;
 
   // measured rotations from starting 0 position
-  private static final double defaultExtendedPosition = 13.5;
+  private static final double defaultExtendedPosition = 13.75;
 
   // power and current limiting
   private static final int kExtendCurrentLimitAmps = 20;
@@ -62,10 +62,10 @@ public class IntakeSubsystem extends SubsystemBase {
   private static final double kCosG = 0.3;
   private static final double kCosRatio = 29.97; // motor 9:1 * gears = 29.97
   // kP was 0.15 in initial testing
-  private static final PidValuesRecord retactPidValues = new PidValuesRecord(0.045, 0.0, 0);
+  private static final PidValuesRecord retactPidValues = new PidValuesRecord(0.2, 0.0, 0);
   // kSlot1 for extending with more power, separate tuning
-  private static final PidValuesRecord extendPidValues = new PidValuesRecord(0.1, 0.0, 0);
-  private static final double kExtendMaxOutput = 0.35;  // was 0.5 in initial testing
+  private static final PidValuesRecord extendPidValues = new PidValuesRecord(0.15, 0.0, 0);
+  private static final double kExtendMaxOutput = 1.0;  // was 0.5 in initial testing
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Intake Extend", retactPidValues);
   private final IntegerSubscriber m_currentLimitSub;

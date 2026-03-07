@@ -13,13 +13,15 @@ import frc.robot.vision.AprilTagShooterHelpers;
 public class TurretAutoTargetCommand extends Command {
   private final TurretSubsystem m_turretSubsystem;
   private Supplier<Double> m_robotAngleSupplier;
+  private Supplier<Boolean> m_isShooting;
 
   /** Creates a new TurretAutoTarget. */
-  public TurretAutoTargetCommand(TurretSubsystem turretSubsystem, Supplier<Double> robotAngle) {
+  public TurretAutoTargetCommand(TurretSubsystem turretSubsystem, Supplier<Double> robotAngle, Supplier<Boolean> isShooting) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(turretSubsystem);
     m_turretSubsystem = turretSubsystem;
     m_robotAngleSupplier = robotAngle;
+    m_isShooting = isShooting;
   }
 
   // Called when the command is initially scheduled.
@@ -31,8 +33,7 @@ public class TurretAutoTargetCommand extends Command {
   @Override
   public void execute() {
     if (m_turretSubsystem.getSuspendAutoTurret()) return;
-    // ToDo: be able to target more than just the hub
-    var target = AprilTagShooterHelpers.turretAngleToTarget(m_robotAngleSupplier.get());
+    var target = AprilTagShooterHelpers.turretAngleToTarget(m_robotAngleSupplier.get(), m_isShooting.get());
     if (Double.isNaN(target))
       return;
     m_turretSubsystem.goToTargetAngle(target);

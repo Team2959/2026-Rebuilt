@@ -15,34 +15,37 @@ public class AprilTagShooterHelpers {
     private final static double rightBumpX = 2.5;
     private final static double bumpY = 5.5;
 
-    // see spreadsheet calculations: https://docs.google.com/spreadsheets/d/1LeHMqRkg8qOJIvRW7yfcDIsMGJCiFuTLF8awAVgnMac/edit?usp=sharing
-    public static double distanceToTarget()
-    {
+    // see spreadsheet calculations:
+    // https://docs.google.com/spreadsheets/d/1LeHMqRkg8qOJIvRW7yfcDIsMGJCiFuTLF8awAVgnMac/edit?usp=sharing
+    public static double distanceToTarget() {
         var pose3d = alliancePose();
         if (pose3d.getX() <= 0 && pose3d.getY() <= 0)
             return Double.NaN;
-        
+
         if (isTargetHub(pose3d))
             return distanceToHub(pose3d);
         return distanceToBump(pose3d);
     }
 
-    public static double turretAngleToTarget(double currentRobotRotation) {
+    public static double turretAngleToTarget(double currentRobotRotation, boolean isShooting) {
         var pose3d = alliancePose();
         // check for valid pose, if not return unusable angle
         if (pose3d.getX() <= 0 && pose3d.getY() <= 0)
             return Double.NaN;
-        
+
         if (isTargetHub(pose3d))
             return turretAngleToHub(pose3d, currentRobotRotation);
-        return turretAngleToBump(pose3d, currentRobotRotation);
+        if (isShooting)
+            return turretAngleToBump(pose3d, currentRobotRotation);
+
+        return Double.NaN;
     }
 
-    private static boolean isTargetHub(Pose3d pose3d){
+    private static boolean isTargetHub(Pose3d pose3d) {
         return pose3d.getX() < 4.4;
     }
 
-    private static boolean isTargetLeftBump(Pose3d pose3d){
+    private static boolean isTargetLeftBump(Pose3d pose3d) {
         return pose3d.getY() > 4;
     }
 
@@ -63,8 +66,7 @@ public class AprilTagShooterHelpers {
         // B15 = DeltaY
         // =IF(B14 = 0, 0, ATAN(B15/B14))
         var deltaX = deltaXToHub(pose3d);
-        if (deltaX == 0)
-        {
+        if (deltaX == 0) {
             if (deltaYToHub(pose3d) < 0)
                 return -90;
             return 90;
@@ -114,8 +116,7 @@ public class AprilTagShooterHelpers {
         // B15 = DeltaY
         // =IF(B14 = 0, 0, ATAN(B15/B14))
         var deltaX = deltaXToBump(pose3d, bumpX);
-        if (deltaX == 0)
-        {
+        if (deltaX == 0) {
             if (deltaYToBump(pose3d) < 0)
                 return -90;
             return 90;

@@ -24,12 +24,13 @@ public class TurretToAngleCommand extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_turretSubsystem.goToTargetAngle(m_target);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+    m_turretSubsystem.goToTargetAngle(m_target);
+  }
 
   // Called once the command ends or is interrupted.
   @Override

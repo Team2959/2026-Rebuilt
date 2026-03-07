@@ -30,9 +30,13 @@ public class ShooterVelocityfromDistanceCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // get distance frame april tags
-    // feed distance to shooter
-    m_ShooterSubsytem.setVelocityfromDistance(AprilTagShooterHelpers.distanceToTarget());
+    if (m_ShooterSubsytem.getFixedShooterSpeed()) {
+      m_ShooterSubsytem.setVelocity(46);
+    } else {
+      // get distance frame april tags
+      // feed distance to shooter
+      m_ShooterSubsytem.setVelocityfromDistance(AprilTagShooterHelpers.distanceToTarget());
+    }
   }
 
   // Called once the command ends or is interrupted.

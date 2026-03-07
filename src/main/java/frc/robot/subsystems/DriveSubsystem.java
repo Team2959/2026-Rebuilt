@@ -58,6 +58,7 @@ public class DriveSubsystem extends SubsystemBase {
     private int m_ticks = 0;
 
     private DoublePublisher m_anglePub;
+    private DoublePublisher m_modAnglePub;
     private DoublePublisher m_mt2XCoordinatePub;
     private DoublePublisher m_mt2YCoordinatePub;
     private DoublePublisher m_mt2RotationPub;
@@ -141,6 +142,7 @@ public class DriveSubsystem extends SubsystemBase {
         NetworkTable datatable = inst.getTable("Drive Subsystem");
 
         m_anglePub = datatable.getDoubleTopic("Angle").publish();
+        m_modAnglePub = datatable.getDoubleTopic("Angle with Modulus").publish();
         m_mt2XCoordinatePub = datatable.getDoubleTopic("mt2 X-Coordinate").publish();
         m_mt2YCoordinatePub = datatable.getDoubleTopic("mt2 Y-Coordinate").publish();
         m_mt2RotationPub = datatable.getDoubleTopic("mt2 Rotation Degrees").publish();
@@ -166,10 +168,12 @@ public class DriveSubsystem extends SubsystemBase {
     public void periodic() {
         updateOdemetry();
 
-        // m_ticks++;
-        // if (m_ticks % 15 != 7)
-        //     return;
+        m_ticks++;
+        if (m_ticks % 15 != 7)
+            return;
 
+        m_anglePub.set(getAngle().getDegrees());
+        m_modAnglePub.set(getModuloAngle());
         //     dashboardUpdate();
     }
 
@@ -179,7 +183,6 @@ public class DriveSubsystem extends SubsystemBase {
         m_backLeft.dashboardUpdate();
         m_backRight.dashboardUpdate();
 
-        m_anglePub.set(getAngle().getDegrees());
 
         var pose2d = m_poseEstimator.getEstimatedPosition();
         m_mt2XCoordinatePub.set(pose2d.getX());
@@ -270,6 +273,10 @@ public class DriveSubsystem extends SubsystemBase {
 
     public Rotation2d getAngle() {
         return m_navX.getRotation2d();
+    }
+
+    public double getModuloAngle() {
+        return m_navX.getRotation2d().getDegrees() % 360;
     }
 
     public void resetOdometry(Pose2d pose) {

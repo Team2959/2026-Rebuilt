@@ -77,6 +77,7 @@ public class Robot extends TimedRobot {
     }
 
     m_robotContainer.initialize();
+    m_robotContainer.teleOpInit();
   }
 
   /** This function is called periodically during operator control. */
