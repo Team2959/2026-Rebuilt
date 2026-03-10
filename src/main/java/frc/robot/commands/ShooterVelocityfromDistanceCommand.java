@@ -31,7 +31,7 @@ public class ShooterVelocityfromDistanceCommand extends Command {
   @Override
   public void execute() {
     if (m_ShooterSubsytem.getFixedShooterSpeed()) {
-      m_ShooterSubsytem.setVelocity(46);
+      m_ShooterSubsytem.setVelocity(m_ShooterSubsytem.getFixedSpeed());
     } else {
       // get distance frame april tags
       // feed distance to shooter

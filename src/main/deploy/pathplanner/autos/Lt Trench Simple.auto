@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "Lt Trench to Mid"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
@@ -13,7 +19,14 @@
                 "data": {
                   "name": "Shoot First 8"
                 }
-              },
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
               {
                 "type": "named",
                 "data": {
@@ -21,12 +34,18 @@
                 }
               },
               {
-                "type": "named",
+                "type": "wait",
                 "data": {
-                  "name": "Turret to Neg 60"
+                  "waitTime": 2.0
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Lt Mid to Lt Trench"
           }
         },
         {

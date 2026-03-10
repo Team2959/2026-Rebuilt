@@ -37,7 +37,7 @@ public class TurretSubsystem extends SubsystemBase {
   private final double kMinTurrentAngle = -kMaxTurretAngle;
   private double m_requestedAngle = 0;
   private double m_rawRequest = 0;
-  private boolean m_suspendAutoTurret;
+  private boolean m_suspendAutoTurret = true;
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
   private final DoublePublisher m_aprilTagTargetPub;

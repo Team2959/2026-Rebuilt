@@ -15,7 +15,9 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -44,11 +46,14 @@ public class ShooterSubsytem extends SubsystemBase {
 
   private final KrakenPidNetworkTableHelper m_networkTable = new KrakenPidNetworkTableHelper("Shooter", pidValues);
   private final DoublePublisher m_aprilTagDistancePub;
+  private final DoubleSubscriber m_fixedSpeedSub;
+  private final BooleanPublisher m_atDistancePub;
 
   private ShooterStateType m_ShooterState = ShooterStateType.Off;
   private double m_requestedVelocity;
 
   private boolean m_fixedShooterSpeed;
+  private double m_fixedSpeed = 5.0;
 
   /** Creates a new Shootersubsytem. */
   public ShooterSubsytem() {
@@ -74,6 +79,11 @@ public class ShooterSubsytem extends SubsystemBase {
 
     var topic = m_networkTable.networkTable().getDoubleTopic("April Tag Distance");
     m_aprilTagDistancePub = topic.publish();
+    var topic2 = m_networkTable.networkTable().getDoubleTopic("Fixed Speed");
+    topic2.publish().set(m_fixedSpeed);
+    m_fixedSpeedSub = topic2.subscribe(m_fixedSpeed);
+    var topic3 = m_networkTable.networkTable().getBooleanTopic("Is At Distance");
+    m_atDistancePub = topic3.publish();
   }
 
   int m_ticks = 0;
@@ -86,9 +96,13 @@ public class ShooterSubsytem extends SubsystemBase {
     if (m_ticks % 15 != 11)
       return;
 
-    // m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) -> setVelocity(t), (b) -> {
+    // m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) ->
+    // setVelocity(t), (b) -> {
     // });
-    m_aprilTagDistancePub.set(AprilTagShooterHelpers.distanceToTarget());
+    var distance = AprilTagShooterHelpers.distanceToTarget();
+    m_atDistancePub.set(Math.abs(distance - 2.0) < 0.2);
+    m_aprilTagDistancePub.set(distance);
+    m_fixedSpeed = m_fixedSpeedSub.get();
   }
 
   public void stopShooter() {
@@ -112,7 +126,7 @@ public class ShooterSubsytem extends SubsystemBase {
   }
 
   public void shooterToIdle() {
-    setVelocity(55.0);
+    setVelocity(m_fixedSpeed);
     setShooterState(ShooterStateType.Idle);
   }
 
@@ -153,11 +167,15 @@ public class ShooterSubsytem extends SubsystemBase {
     return lowerSpeed + (distance - lowerDistance) * deltaSpeed / 0.5;
   }
 
-   public boolean getFixedShooterSpeed(){
-        return m_fixedShooterSpeed;
+  public boolean getFixedShooterSpeed() {
+    return m_fixedShooterSpeed;
   }
 
-  public void setFixedShooterSpeed(boolean suspend){
+  public void setFixedShooterSpeed(boolean suspend) {
     m_fixedShooterSpeed = suspend;
+  }
+
+  public double getFixedSpeed() {
+    return m_fixedSpeed;
   }
 }

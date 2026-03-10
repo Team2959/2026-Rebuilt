@@ -7,19 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Lt Bump Backup"
+            "pathName": "Rt Hub Backup"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Extend Intake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot First 8"
+            "name": "Shoot Full Hopper"
           }
         }
       ]

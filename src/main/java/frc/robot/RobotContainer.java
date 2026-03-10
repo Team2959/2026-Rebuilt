@@ -21,6 +21,8 @@ import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -41,7 +43,7 @@ public class RobotContainer {
   private final Conditioning m_driveXConditioning = new Conditioning();
   private final Conditioning m_driveYConditioning = new Conditioning();
   private final Conditioning m_turnConditioning = new Conditioning();
-  private static double m_speedMultiplier = 1.0;
+  private static double m_speedMultiplier = 0.85;
 
   private final CommandJoystick m_leftJoystick = new CommandJoystick(RobotMap.kLeftJoystick);
   private final CommandJoystick m_rightJoystick = new CommandJoystick(RobotMap.kRightJoystick);
@@ -50,6 +52,7 @@ public class RobotContainer {
   private final Robot m_robot;
 
   private final SendableChooser<Command> m_autoChooser;
+  private final DoubleSubscriber m_speedSub;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -62,6 +65,12 @@ public class RobotContainer {
     m_autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Chooser", m_autoChooser);
 
+    NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    var datatable = inst.getTable("Speed Multiplier");
+    var topic = datatable.getDoubleTopic("Speed Multiplier");
+    topic.publish().set(m_speedMultiplier);
+    m_speedSub = topic.subscribe(m_speedMultiplier);
+
     // Configure the trigger bindings
     configureBindings();
   }
@@ -73,7 +82,6 @@ public class RobotContainer {
 
     m_turretSubsystem.setDefaultCommand(new TurretAutoTargetCommand(m_turretSubsystem,
         () -> {
-          // return m_driveSubsystem.getAngle().getDegrees();
           return m_driveSubsystem.getModuloAngle();
         },
         () -> {
@@ -128,9 +136,14 @@ public class RobotContainer {
   }
 
   public void initialize() {
-    // m_speedMultiplier = m_speedSub.get();
+    m_speedMultiplier = m_speedSub.get();
 
     m_driveSubsystem.initialize();
+  }
+
+  public void autoInit(){
+    m_ShooterSubsytem.setFixedShooterSpeed(true);
+    m_turretSubsystem.setSuspendAutoTurret(true);
   }
 
   public void teleOpInit(){
@@ -161,8 +174,8 @@ public class RobotContainer {
   }
 
   private void createNamedCommandsForAutos() {
-    NamedCommands.registerCommand("Shoot First 8", startAndStopShooting(2));
-    NamedCommands.registerCommand("Shoot Full Hopper", startAndStopShooting(5));
+    NamedCommands.registerCommand("Shoot First 8", startAndStopShooting(3));
+    NamedCommands.registerCommand("Shoot Full Hopper", startAndStopShooting(15));
     NamedCommands.registerCommand("Start Shooting", startShootingCommand());
     NamedCommands.registerCommand("Stop Shooting", stopShootingCommand());
     NamedCommands.registerCommand("Extend Intake", extendIntakeCommand());
