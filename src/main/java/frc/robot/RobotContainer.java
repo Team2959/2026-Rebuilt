@@ -142,13 +142,13 @@ public class RobotContainer {
   }
 
   public void autoInit(){
-    m_ShooterSubsytem.setFixedShooterSpeed(true);
-    m_turretSubsystem.setSuspendAutoTurret(true);
+    // m_ShooterSubsytem.setFixedShooterSpeed(true);
+    // m_turretSubsystem.setSuspendAutoTurret(true);
   }
 
   public void teleOpInit(){
-    m_ShooterSubsytem.setFixedShooterSpeed(true);
-    m_turretSubsystem.setSuspendAutoTurret(true);
+    // m_ShooterSubsytem.setFixedShooterSpeed(true);
+    // m_turretSubsystem.setSuspendAutoTurret(true);
   }
 
   private Command startShootingCommand() {
