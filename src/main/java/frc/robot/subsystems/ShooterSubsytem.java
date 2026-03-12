@@ -139,7 +139,7 @@ public class ShooterSubsytem extends SubsystemBase {
   }
 
   public boolean isAtVelocity() {
-    return m_shooterWheel.getVelocity().getValueAsDouble() - m_requestedVelocity > 1.0;
+    return m_shooterWheel.getVelocity().getValueAsDouble() - m_requestedVelocity > -1.0;
   }
 
   private double velocityFromDistance(double distance) {

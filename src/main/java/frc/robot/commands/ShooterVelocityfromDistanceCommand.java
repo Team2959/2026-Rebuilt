@@ -35,7 +35,10 @@ public class ShooterVelocityfromDistanceCommand extends Command {
     } else {
       // get distance frame april tags
       // feed distance to shooter
-      m_ShooterSubsytem.setVelocityfromDistance(AprilTagShooterHelpers.distanceToTarget());
+      var distance = AprilTagShooterHelpers.distanceToTarget();
+      if (Double.isNaN(distance))
+        return;
+      m_ShooterSubsytem.setVelocityfromDistance(distance);
     }
   }
 

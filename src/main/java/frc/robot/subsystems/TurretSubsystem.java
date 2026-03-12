@@ -9,6 +9,11 @@ import com.revrobotics.spark.SparkRelativeEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkBase.ControlType;
+
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.FeedbackSensor;
@@ -16,7 +21,13 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.units.measure.MutAngle;
+import edu.wpi.first.units.measure.MutAngularVelocity;
+import edu.wpi.first.units.measure.MutVoltage;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.NeoPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
@@ -32,6 +43,7 @@ public class TurretSubsystem extends SubsystemBase {
   private static final double kStatic = 0.18;
   // initial testing had kP 0.015, but jerky at end
   private static final PidValuesRecord pidValues = new PidValuesRecord(0.007, 0, 0);
+  private static final double kPositionConversionFactor = 360.0 / 25.6;
 
   private final double kMaxTurretAngle = 90;
   private final double kMinTurrentAngle = -kMaxTurretAngle;
@@ -44,6 +56,34 @@ public class TurretSubsystem extends SubsystemBase {
   private final DoublePublisher m_requestTargetPub;
   private final DoublePublisher m_correctedTargetPub;
 
+  private final MutVoltage m_appliedVoltage = Volts.mutable(0);
+  private final MutAngle m_angle = Degrees.mutable(0);
+  private final MutAngularVelocity m_velocity = DegreesPerSecond.mutable(0);
+  // Create a new SysId routine for characterizing the shooter.
+  private final SysIdRoutine m_sysIdRoutine = new SysIdRoutine(
+      // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
+      new SysIdRoutine.Config(),
+      new SysIdRoutine.Mechanism(
+          // Tell SysId how to plumb the driving voltage to the motor(s).
+          m_turretMotor::setVoltage,
+          // Tell SysId how to record a frame of data for each motor on the mechanism
+          // being
+          // characterized.
+          log -> {
+            // Record a frame for the shooter motor.
+            log.motor("shooter-wheel")
+                .voltage(
+                    m_appliedVoltage.mut_replace(
+                        m_turretMotor.get() * RobotController.getBatteryVoltage(), Volts))
+                .angularPosition(m_angle.mut_replace(m_turretEncoder.getPosition(), Degrees))
+                .angularVelocity(
+                    m_velocity.mut_replace(m_turretEncoder.getVelocity(), DegreesPerSecond));
+          },
+          // Tell SysId to make generated commands require this subsystem, suffix test
+          // state in
+          // WPILog with this subsystem's name ("shooter")
+          this));
+
   /** Creates a new TurretSubsystem. */
   public TurretSubsystem() {
     m_turretEncoder = (SparkRelativeEncoder) m_turretMotor.getEncoder();
@@ -52,11 +92,13 @@ public class TurretSubsystem extends SubsystemBase {
     m_turretConfig.idleMode(IdleMode.kBrake).inverted(true);
 
     // measured on turret that it took 25.6 motor rotations to turn 360 degrees
-    m_turretConfig.encoder.positionConversionFactor(360.0 / 25.6);
+    m_turretConfig.encoder.positionConversionFactor(kPositionConversionFactor)
+        .velocityConversionFactor(kPositionConversionFactor / 60.0);
     m_turretConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pid(pidValues.kP(), pidValues.kI(), pidValues.kD());
-    m_turretConfig.closedLoop.feedForward.kS(kStatic);
+    m_turretConfig.closedLoop.feedForward.kS(kStatic);//.kV(0.25).kA(0.25);
+    // m_turretConfig.closedLoop.maxMotion.cruiseVelocity(200).maxAcceleration(200).allowedProfileError(3);
 
     m_turretMotor.configure(m_turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -109,6 +151,7 @@ public class TurretSubsystem extends SubsystemBase {
     if (m_requestedAngle < kMinTurrentAngle || m_requestedAngle > kMaxTurretAngle)
       return;
     m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
+    // m_turretController.setSetpoint(targetAngle, ControlType.kMAXMotionPositionControl);
   }
 
   private double keepAngleInOneEightySpace(double angle) {
@@ -136,5 +179,13 @@ public class TurretSubsystem extends SubsystemBase {
     m_suspendAutoTurret = suspend;
     if (suspend)
       m_turretController.setSetpoint(0, ControlType.kPosition);
+  }
+
+  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutine.quasistatic(direction);
+  }
+
+  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutine.dynamic(direction);
   }
 }

@@ -95,6 +95,11 @@ public class RobotContainer {
         }, m_driveSubsystem));
     m_leftJoystick.button(RobotMap.kLeftLockWheels).whileTrue(m_driveSubsystem.lockWheelsCommand());
 
+    // m_rightJoystick.button(1).whileTrue(m_turretSubsystem.sysIdQuasistatic(Direction.kForward));
+    // m_leftJoystick.button(1).whileTrue(m_turretSubsystem.sysIdQuasistatic(Direction.kReverse));
+    // m_rightJoystick.button(2).whileTrue(m_turretSubsystem.sysIdDynamic(Direction.kForward));
+    // m_leftJoystick.button(2).whileTrue(m_turretSubsystem.sysIdDynamic(Direction.kReverse));
+
     m_buttonBox.button(RobotMap.kExtendIntake).onTrue(extendIntakeCommand());
     m_buttonBox.button(RobotMap.kRetractIntake).onTrue(m_intakeSubsystem.retractIntakeCommand());
     m_buttonBox.button(RobotMap.kToggleIntake).toggleOnTrue(m_intakeSubsystem.toggleIntakeCommand());
