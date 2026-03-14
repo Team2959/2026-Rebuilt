@@ -16,11 +16,14 @@ import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsytem;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.vision.AprilTagShooterHelpers;
 import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -50,9 +53,14 @@ public class RobotContainer {
   private final CommandJoystick m_buttonBox = new CommandJoystick(RobotMap.kButtonBox);
 
   private final Robot m_robot;
+  private double m_targetTurretAngle;
+  private double m_targetDistance;
 
   private final SendableChooser<Command> m_autoChooser;
   private final DoubleSubscriber m_speedSub;
+  private final DoublePublisher m_mt2TargetAnglePub;
+  private final DoublePublisher m_mt2TargetDistancePub;
+  private final BooleanPublisher m_atDistancePub;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -70,6 +78,12 @@ public class RobotContainer {
     var topic = datatable.getDoubleTopic("Speed Multiplier");
     topic.publish().set(m_speedMultiplier);
     m_speedSub = topic.subscribe(m_speedMultiplier);
+    topic = datatable.getDoubleTopic("MT2 Distance");
+    m_mt2TargetDistancePub = topic.publish();
+    topic = datatable.getDoubleTopic("MT2 Angle");
+    m_mt2TargetAnglePub = topic.publish();
+    var topic2 = datatable.getBooleanTopic("Is At Distance");
+    m_atDistancePub = topic2.publish();
 
     // Configure the trigger bindings
     configureBindings();
@@ -80,10 +94,9 @@ public class RobotContainer {
         () -> getDriveXInput(), () -> getDriveYInput(), () -> getTurnInput(),
         () -> m_robot.isTeleopEnabled()));
 
-    m_turretSubsystem.setDefaultCommand(new TurretAutoTargetCommand(m_turretSubsystem, m_driveSubsystem,
+    m_turretSubsystem.setDefaultCommand(new TurretAutoTargetCommand(m_turretSubsystem, 
         () -> {
-          var state = m_ShooterSubsytem.getShooterState();
-          return state == ShooterStateType.PreptoShoot || state == ShooterStateType.Shooting;
+          return m_targetTurretAngle;
         }));
 
     m_rightJoystick.button(RobotMap.kRightResetNavXButton).onTrue(
@@ -143,19 +156,32 @@ public class RobotContainer {
     m_driveSubsystem.initialize();
   }
 
+  public void robotPeriodic(){
+    // MegaTag2 targeting
+    AprilTagShooterHelpers.updateLimelightPose(m_turretSubsystem.currentAngle());
+    AprilTagShooterHelpers.updateRobotOrientation(m_driveSubsystem.getAngle().getDegrees(), m_driveSubsystem.getYawRate());
+    m_targetTurretAngle = AprilTagShooterHelpers.mt2TargetAngle(m_ShooterSubsytem.isShooting());
+    m_targetDistance = AprilTagShooterHelpers.mt2DistanceToTaget(m_ShooterSubsytem.isShooting());
+    m_mt2TargetAnglePub.set(m_targetTurretAngle);
+    m_mt2TargetDistancePub.set(m_targetDistance);
+    m_atDistancePub.set(Math.abs(m_targetDistance - 2.0) < 0.2);
+  }
+
   public void autoInit(){
+    // uncomment to force fixed shooter speed and/or turret angle in auto
     // m_ShooterSubsytem.setFixedShooterSpeed(true);
     // m_turretSubsystem.setSuspendAutoTurret(true);
   }
 
   public void teleOpInit(){
+    // uncomment to force fixed shooter speed and/or turret angle in teleop
     // m_ShooterSubsytem.setFixedShooterSpeed(true);
     // m_turretSubsystem.setSuspendAutoTurret(true);
   }
 
   private Command startShootingCommand() {
     return new InstantCommand();
-    // return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem)
+    // return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem, () -> { return m_targetDistance; })
     //     .alongWith(m_hopperSubsystem.startHopperCommand()
     //         .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
   }

@@ -25,7 +25,7 @@ public class AprilTagShooterHelpers {
         if (pose3d.getX() <= 0 && pose3d.getY() <= 0)
             return Double.NaN;
 
-        if (isTargetHub(pose3d))
+        if (isTargetHub(pose3d.getX()))
             return distanceToHub(pose3d);
         return distanceToBump(pose3d);
     }
@@ -36,7 +36,7 @@ public class AprilTagShooterHelpers {
         if (pose3d.getX() <= 0 && pose3d.getY() <= 0)
             return Double.NaN;
 
-        if (isTargetHub(pose3d))
+        if (isTargetHub(pose3d.getX()))
             return turretAngleToHub(pose3d, currentRobotRotation);
         if (isShooting)
             return turretAngleToBump(pose3d, currentRobotRotation);
@@ -44,12 +44,12 @@ public class AprilTagShooterHelpers {
         return Double.NaN;
     }
 
-    private static boolean isTargetHub(Pose3d pose3d) {
-        return pose3d.getX() < 4.4;
+    private static boolean isTargetHub(double x) {
+        return x < 4.4;
     }
 
-    private static boolean isTargetLeftBump(Pose3d pose3d) {
-        return pose3d.getY() > 4;
+    private static boolean isTargetLeftBump(double y) {
+        return y > 4;
     }
 
     private static double distanceToHub(Pose3d pose3d) {
@@ -90,7 +90,7 @@ public class AprilTagShooterHelpers {
 
     private static double distanceToBump(Pose3d pose3d) {
         var bumpX = rightBumpX;
-        if (isTargetLeftBump(pose3d))
+        if (isTargetLeftBump(pose3d.getY()))
             bumpX = leftBumpX;
         // calculate distance from robot to bump, from spreadsheet calcs
         // B14 = DeltaX
@@ -112,7 +112,7 @@ public class AprilTagShooterHelpers {
 
     private static double turretAngleToBump(Pose3d pose3d, double currentRobotRotation) {
         var bumpX = rightBumpX;
-        if (isTargetLeftBump(pose3d))
+        if (isTargetLeftBump(pose3d.getY()))
             bumpX = leftBumpX;
         // calculate target turret angle to hub, from spreadsheet calcs
         // B14 = DeltaX
@@ -167,19 +167,50 @@ public class AprilTagShooterHelpers {
             return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
     }
 
-    public static double mt2TargetAngle() {
+    private static Translation2d targeTranslation2d(PoseEstimate mt2, boolean isShooting) {
+        if (isTargetHub(mt2.pose.getX())) {
+            // Field coordinates for the center of the Hub (example values)
+            return new Translation2d(hubX, hubY);
+        }
+
+        if (isShooting) {
+            var bumpX = rightBumpX;
+            if (isTargetLeftBump(mt2.pose.getY()))
+                bumpX = leftBumpX;
+            return new Translation2d(bumpX, bumpY);
+        }
+
+        return Translation2d.kZero;
+    }
+
+    public static double mt2TargetAngle(boolean isShooting) {
         // 2. Get the field-space pose estimate
         var mt2 = alliancePoseMt2();
 
         if (mt2.tagCount > 0) {
-            // Field coordinates for the center of the Hub (example values)
-            Translation2d hubTarget = new Translation2d(hubX, hubY);
+            Translation2d target = targeTranslation2d(mt2, isShooting);
+
+            if (target == Translation2d.kZero)
+                return Double.NaN;
 
             // Calculate angle from robot to hub
-            Rotation2d fieldAngleToHub = hubTarget.minus(mt2.pose.getTranslation()).getAngle();
+            Rotation2d fieldAngleToHub = target.minus(mt2.pose.getTranslation()).getAngle();
 
             // Convert to the angle the turret needs to be at relative to the robot
             return fieldAngleToHub.minus(mt2.pose.getRotation()).getDegrees();
+        }
+        return Double.NaN;
+    }
+
+    public static double mt2DistanceToTaget(boolean isShooting) {
+        var mt2 = alliancePoseMt2();
+        if (mt2.tagCount > 0) {
+            Translation2d target = targeTranslation2d(mt2, isShooting);
+
+            if (target == Translation2d.kZero)
+                return Double.NaN;
+
+            return mt2.pose.getTranslation().getDistance(target);
         }
         return Double.NaN;
     }

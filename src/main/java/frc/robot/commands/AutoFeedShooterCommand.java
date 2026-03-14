@@ -49,7 +49,6 @@ public class AutoFeedShooterCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    var state = m_shooterSubsytem.getShooterState();
-    return state != ShooterStateType.PreptoShoot && state != ShooterStateType.Shooting;
+    return !m_shooterSubsytem.isShooting();
   }
 }

@@ -4,21 +4,24 @@
 
 package frc.robot.commands;
 
+import java.util.function.Supplier;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.ShooterSubsytem;
 import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
-import frc.robot.vision.AprilTagShooterHelpers;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ShooterVelocityfromDistanceCommand extends Command {
 
   private ShooterSubsytem m_ShooterSubsytem;
+  private Supplier<Double> m_targetDistance;
 
   /** Creates a new ShooterVelocityfromDistanceCommand. */
-  public ShooterVelocityfromDistanceCommand(ShooterSubsytem shooterSubsytem) {
+  public ShooterVelocityfromDistanceCommand(ShooterSubsytem shooterSubsytem, Supplier<Double> targetDistance) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(shooterSubsytem);
     m_ShooterSubsytem = shooterSubsytem;
+    m_targetDistance = targetDistance;
   }
 
   // Called when the command is initially scheduled.
@@ -35,7 +38,8 @@ public class ShooterVelocityfromDistanceCommand extends Command {
     } else {
       // get distance frame april tags
       // feed distance to shooter
-      var distance = AprilTagShooterHelpers.distanceToTarget();
+      // var distance = AprilTagShooterHelpers.distanceToTarget();
+      var distance = m_targetDistance.get();
       if (Double.isNaN(distance))
         return;
       m_ShooterSubsytem.setVelocityfromDistance(distance);
@@ -51,7 +55,6 @@ public class ShooterVelocityfromDistanceCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    var state = m_ShooterSubsytem.getShooterState();
-    return state != ShooterStateType.PreptoShoot && state != ShooterStateType.Shooting;
+    return !m_ShooterSubsytem.isShooting();
   }
 }

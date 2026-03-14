@@ -31,7 +31,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.NeoPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
-import frc.robot.vision.AprilTagShooterHelpers;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -40,7 +39,7 @@ public class TurretSubsystem extends SubsystemBase {
   private SparkClosedLoopController m_turretController;
   private final SparkMaxConfig m_turretConfig;
 
-  private static final double kStatic = 0.18;
+  private static final double kStatic = 0.18;// 0.22
   // initial testing had kP 0.015, but jerky at end
   private static final PidValuesRecord pidValues = new PidValuesRecord(0.007, 0, 0);
   private static final double kPositionConversionFactor = 360.0 / 25.6;
@@ -49,14 +48,11 @@ public class TurretSubsystem extends SubsystemBase {
   private final double kMinTurrentAngle = -kMaxTurretAngle;
   private double m_requestedAngle = 0;
   private double m_rawRequest = 0;
-  private double m_mt2Target = 0;
   private boolean m_suspendAutoTurret = false;
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
-  private final DoublePublisher m_aprilTagTargetPub;
   private final DoublePublisher m_requestTargetPub;
   private final DoublePublisher m_correctedTargetPub;
-  private final DoublePublisher m_mt2TargetPub;
 
   private final MutVoltage m_appliedVoltage = Volts.mutable(0);
   private final MutAngle m_angle = Degrees.mutable(0);
@@ -99,20 +95,16 @@ public class TurretSubsystem extends SubsystemBase {
     m_turretConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pid(pidValues.kP(), pidValues.kI(), pidValues.kD());
-    m_turretConfig.closedLoop.feedForward.kS(kStatic);//.kV(0.25).kA(0.25);
-    // m_turretConfig.closedLoop.maxMotion.cruiseVelocity(200).maxAcceleration(200).allowedProfileError(3);
+    m_turretConfig.closedLoop.feedForward.kS(kStatic);// .kV(0.025).kA(0.025);
+    // m_turretConfig.closedLoop.maxMotion.cruiseVelocity(120).maxAcceleration(75).allowedProfileError(3);
 
     m_turretMotor.configure(m_turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     // additional publisher
-    var topic = m_networkTable.networkTable().getDoubleTopic("April Tag Angle");
-    m_aprilTagTargetPub = topic.publish();
-    var topic2 = m_networkTable.networkTable().getDoubleTopic("Requested Angle");
-    m_requestTargetPub = topic2.publish();
-    var topic3 = m_networkTable.networkTable().getDoubleTopic("Corrected 180 Angle");
-    m_correctedTargetPub = topic3.publish();
-    var topic4 = m_networkTable.networkTable().getDoubleTopic("MT2 Target");
-    m_mt2TargetPub = topic4.publish();
+    var topic = m_networkTable.networkTable().getDoubleTopic("Requested Angle");
+    m_requestTargetPub = topic.publish();
+    topic = m_networkTable.networkTable().getDoubleTopic("Corrected 180 Angle");
+    m_correctedTargetPub = topic.publish();
 
     goToTargetAngle(0);
   }
@@ -131,10 +123,8 @@ public class TurretSubsystem extends SubsystemBase {
         (t) -> goToTargetAngle(t),
         (b) -> {
         });
-    m_aprilTagTargetPub.set(AprilTagShooterHelpers.turretAngleToTarget(0, true));
-    m_requestTargetPub.set(m_rawRequest);
+    // m_requestTargetPub.set(m_rawRequest);
     m_correctedTargetPub.set(m_requestedAngle);
-    m_mt2TargetPub.set(m_mt2Target);
   }
 
   public void stopTurret() {
@@ -153,7 +143,7 @@ public class TurretSubsystem extends SubsystemBase {
       else
         targetAngle = currentAngle - kDegreeLimiter;
     }
-    if (m_requestedAngle < kMinTurrentAngle || m_requestedAngle > kMaxTurretAngle)
+    if (targetAngle < kMinTurrentAngle || targetAngle > kMaxTurretAngle)
       return;
     m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
     // m_turretController.setSetpoint(targetAngle, ControlType.kMAXMotionPositionControl);
@@ -192,9 +182,5 @@ public class TurretSubsystem extends SubsystemBase {
 
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return m_sysIdRoutine.dynamic(direction);
-  }
-
-  public void setMt2Target(double target){
-    m_mt2Target = target;
   }
 }
