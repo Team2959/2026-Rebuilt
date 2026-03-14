@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.NeoPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
@@ -120,14 +121,11 @@ public class IntakeSubsystem extends SubsystemBase {
     setExtendPosition(0);
   }
 
-  int m_ticks = 0;
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
 
-    m_ticks++;
-    if (m_ticks % 15 != 3)
+    if (RobotContainer.m_ticks % 15 != 3)
       return;
 
     if (!m_isExtended && isExtended(1)) {

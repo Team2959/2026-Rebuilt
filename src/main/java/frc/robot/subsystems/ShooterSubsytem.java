@@ -19,6 +19,7 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.KrakenPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
@@ -77,14 +78,11 @@ public class ShooterSubsytem extends SubsystemBase {
     m_fixedSpeedSub = topic.subscribe(m_fixedSpeed);
   }
 
-  int m_ticks = 0;
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
 
-    m_ticks++;
-    if (m_ticks % 15 != 11)
+    if (RobotContainer.m_ticks % 15 != 11)
       return;
 
     // m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) ->

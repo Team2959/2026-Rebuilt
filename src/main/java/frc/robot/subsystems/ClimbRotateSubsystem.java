@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.robotarians.KrakenPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
 
@@ -48,13 +49,11 @@ public class ClimbRotateSubsystem extends SubsystemBase {
     m_rotateMotor.setNeutralMode(NeutralModeValue.Brake);
   }
 
-  int m_ticks = 0;
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
   
-    m_ticks++;
-    if (m_ticks % 15 != 2)
+    if (RobotContainer.m_ticks % 15 != 2)
         return;
   
     m_networkTable.dashboardUpdate(m_rotateMotor, m_rotateConfig, (t) -> setRotatePosition(t), (b) -> {});

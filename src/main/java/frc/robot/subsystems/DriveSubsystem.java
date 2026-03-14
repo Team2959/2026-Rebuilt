@@ -27,6 +27,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -54,8 +55,6 @@ public class DriveSubsystem extends SubsystemBase {
     private final Translation2d kFrontRightLocation = new Translation2d(kHalfTrackWidthMeters, -kHalfTrackWidthMeters);
     private final Translation2d kBackLeftLocation = new Translation2d(-kHalfTrackWidthMeters, kHalfTrackWidthMeters);
     private final Translation2d kBackRightLocation = new Translation2d(-kHalfTrackWidthMeters, -kHalfTrackWidthMeters);
-
-    private int m_ticks = 0;
 
     private DoublePublisher m_anglePub;
     private DoublePublisher m_modAnglePub;
@@ -168,8 +167,7 @@ public class DriveSubsystem extends SubsystemBase {
     public void periodic() {
         updateOdemetry();
 
-        m_ticks++;
-        if (m_ticks % 15 != 7)
+        if (RobotContainer.m_ticks % 15 != 7)
             return;
 
         m_anglePub.set(getAngle().getDegrees());

@@ -44,16 +44,13 @@ public class HopperSubsystem extends SubsystemBase {
     m_HopperSpeedSub = speedTopic.subscribe(defaultspeed);
   }
 
-  int m_ticks = 0;
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
 
-    // m_ticks++;
-    // if (m_ticks % 19 != 17)
+    // if (RobotContainer.m_ticks % 19 != 17)
     //   return;
-    // dashboardUpdate();
+    // m_HopperSpeed = m_HopperSpeedSub.get();
   }
 
   public void stopHopper() {
@@ -82,9 +79,5 @@ public class HopperSubsystem extends SubsystemBase {
 
   public Command reverseHopperCommand() {
     return new StartEndCommand(() -> reverseHopper(), () -> stopHopper(), this);
-  }
-
-  public void dashboardUpdate() {
-    m_HopperSpeed = m_HopperSpeedSub.get();
   }
 }

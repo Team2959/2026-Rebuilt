@@ -39,7 +39,7 @@ public class RobotContainer {
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
   // private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
   // private final HopperSubsystem m_hopperSubsystem = new HopperSubsystem();
-  // private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
+  private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
   private final ShooterSubsytem m_ShooterSubsytem = new ShooterSubsytem();
   private final TurretSubsystem m_turretSubsystem = new TurretSubsystem();
 
@@ -116,10 +116,10 @@ public class RobotContainer {
     // m_buttonBox.button(RobotMap.kReverseIntake).whileTrue(m_intakeSubsystem.reverseIntakeCommand());
     // m_buttonBox.button(RobotMap.kToggleHopper).toggleOnTrue(m_hopperSubsystem.toggleHopperCommand());
     // m_buttonBox.button(RobotMap.kReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
-    // m_buttonBox.button(RobotMap.kFeedShooter).whileTrue(
-    //     new StartEndCommand(() -> m_FeederSubsystem.startFeeder(), () -> m_FeederSubsystem.stopFeeder(),
-    //         m_FeederSubsystem));
-    // m_buttonBox.button(RobotMap.kReverseFeeder).whileTrue(m_FeederSubsystem.reverseFeederCommand());
+    m_buttonBox.button(RobotMap.kFeedShooter).whileTrue(
+        new StartEndCommand(() -> m_FeederSubsystem.startFeeder(), () -> m_FeederSubsystem.stopFeeder(),
+            m_FeederSubsystem));
+    m_buttonBox.button(RobotMap.kReverseFeeder).whileTrue(m_FeederSubsystem.reverseFeederCommand());
     m_buttonBox.button(RobotMap.kSuspendAutoTurret).toggleOnTrue(new StartEndCommand(
         () -> m_turretSubsystem.setSuspendAutoTurret(true),
         () -> m_turretSubsystem.setSuspendAutoTurret(false)));
@@ -156,12 +156,20 @@ public class RobotContainer {
     m_driveSubsystem.initialize();
   }
 
+  public static int m_ticks = 0;
   public void robotPeriodic(){
     // MegaTag2 targeting
     AprilTagShooterHelpers.updateLimelightPose(m_turretSubsystem.currentAngle());
     AprilTagShooterHelpers.updateRobotOrientation(m_driveSubsystem.getAngle().getDegrees(), m_driveSubsystem.getYawRate());
-    m_targetTurretAngle = AprilTagShooterHelpers.mt2TargetAngle(m_ShooterSubsytem.isShooting());
-    m_targetDistance = AprilTagShooterHelpers.mt2DistanceToTaget(m_ShooterSubsytem.isShooting());
+    var mt2 = AprilTagShooterHelpers.alliancePoseMt2();
+    m_targetTurretAngle = AprilTagShooterHelpers.mt2TargetAngle(mt2, m_ShooterSubsytem.isShooting());
+    m_targetDistance = AprilTagShooterHelpers.mt2DistanceToTaget(mt2, m_ShooterSubsytem.isShooting());
+
+    m_ticks++;
+
+    if (m_ticks % 15 != 1)
+      return;
+
     m_mt2TargetAnglePub.set(m_targetTurretAngle);
     m_mt2TargetDistancePub.set(m_targetDistance);
     m_atDistancePub.set(Math.abs(m_targetDistance - 2.0) < 0.2);
@@ -180,15 +188,15 @@ public class RobotContainer {
   }
 
   private Command startShootingCommand() {
-    return new InstantCommand();
-    // return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem, () -> { return m_targetDistance; })
+    return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem, () -> { return m_targetDistance; })
     //     .alongWith(m_hopperSubsystem.startHopperCommand()
-    //         .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
+            .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem))
+            // )
+            ;
   }
 
   private Command stopShootingCommand() {
-    return new InstantCommand();
-    // return m_ShooterSubsytem.shooterToIdleCommand()
+    return m_ShooterSubsytem.shooterToIdleCommand();
     //     .andThen(new InstantCommand(() -> {
     //       m_hopperSubsystem.stopHopper();
     //     }));

@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.KrakenPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
@@ -62,14 +63,11 @@ public class ClimbExtendSubsystem extends SubsystemBase {
     stopClimb();
   }
 
-  int m_ticks = 0;
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
 
-    m_ticks++;
-    if (m_ticks % 15 != 13)
+    if (RobotContainer.m_ticks % 15 != 13)
       return;
 
     m_networkTable.dashboardUpdate(m_extendMotor, m_extendConfig, (t) -> setExtendPosition(t),

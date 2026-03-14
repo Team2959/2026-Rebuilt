@@ -159,7 +159,7 @@ public class AprilTagShooterHelpers {
     }
 
     // what do you do if the limelight doesn't see an april tag????
-    private static PoseEstimate alliancePoseMt2() {
+    public static PoseEstimate alliancePoseMt2() {
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red)
             return LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("limelight");
@@ -183,10 +183,7 @@ public class AprilTagShooterHelpers {
         return Translation2d.kZero;
     }
 
-    public static double mt2TargetAngle(boolean isShooting) {
-        // 2. Get the field-space pose estimate
-        var mt2 = alliancePoseMt2();
-
+    public static double mt2TargetAngle(PoseEstimate mt2, boolean isShooting) {
         if (mt2.tagCount > 0) {
             Translation2d target = targeTranslation2d(mt2, isShooting);
 
@@ -202,8 +199,7 @@ public class AprilTagShooterHelpers {
         return Double.NaN;
     }
 
-    public static double mt2DistanceToTaget(boolean isShooting) {
-        var mt2 = alliancePoseMt2();
+    public static double mt2DistanceToTaget(PoseEstimate mt2, boolean isShooting) {
         if (mt2.tagCount > 0) {
             Translation2d target = targeTranslation2d(mt2, isShooting);
 

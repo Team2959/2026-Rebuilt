@@ -47,16 +47,13 @@ public class FeederSubsystem extends SubsystemBase {
     m_FeederSpeedSub = speedTopic.subscribe(defaultspeed);
   }
 
-  int m_ticks = 0;
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
 
-    // m_ticks++;
-    // if (m_ticks % 19 != 19)
+    // if (RobotContainer.m_ticks % 19 != 19)
     // return;
-    // dashboardUpdate();
+    // m_FeederSpeed = m_FeederSpeedSub.get();
   }
 
   public void stopFeeder() {
@@ -81,9 +78,5 @@ public class FeederSubsystem extends SubsystemBase {
 
   public Command reverseFeederCommand() {
     return new StartEndCommand(() -> reverseFeeder(), () -> stopFeeder(), this);
-  }
-
-  public void dashboardUpdate() {
-    m_FeederSpeed = m_FeederSpeedSub.get();
   }
 }

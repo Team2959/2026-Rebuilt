@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.NeoPidNetworkTableHelper;
 import frc.robot.robotarians.PidValuesRecord;
@@ -109,14 +110,11 @@ public class TurretSubsystem extends SubsystemBase {
     goToTargetAngle(0);
   }
 
-  int m_ticks = 0;
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
 
-    m_ticks++;
-    if (m_ticks % 15 != 5)
+    if (RobotContainer.m_ticks % 15 != 5)
       return;
 
     m_networkTable.dashboardUpdate(m_turretMotor, m_turretEncoder, m_turretConfig,
