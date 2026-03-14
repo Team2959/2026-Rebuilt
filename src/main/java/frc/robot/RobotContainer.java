@@ -34,9 +34,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
-  private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
-  private final HopperSubsystem m_hopperSubsystem = new HopperSubsystem();
-  private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
+  // private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
+  // private final HopperSubsystem m_hopperSubsystem = new HopperSubsystem();
+  // private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
   private final ShooterSubsytem m_ShooterSubsytem = new ShooterSubsytem();
   private final TurretSubsystem m_turretSubsystem = new TurretSubsystem();
 
@@ -80,10 +80,7 @@ public class RobotContainer {
         () -> getDriveXInput(), () -> getDriveYInput(), () -> getTurnInput(),
         () -> m_robot.isTeleopEnabled()));
 
-    m_turretSubsystem.setDefaultCommand(new TurretAutoTargetCommand(m_turretSubsystem,
-        () -> {
-          return m_driveSubsystem.getModuloAngle();
-        },
+    m_turretSubsystem.setDefaultCommand(new TurretAutoTargetCommand(m_turretSubsystem, m_driveSubsystem,
         () -> {
           var state = m_ShooterSubsytem.getShooterState();
           return state == ShooterStateType.PreptoShoot || state == ShooterStateType.Shooting;
@@ -101,15 +98,15 @@ public class RobotContainer {
     // m_leftJoystick.button(2).whileTrue(m_turretSubsystem.sysIdDynamic(Direction.kReverse));
 
     m_buttonBox.button(RobotMap.kExtendIntake).onTrue(extendIntakeCommand());
-    m_buttonBox.button(RobotMap.kRetractIntake).onTrue(m_intakeSubsystem.retractIntakeCommand());
-    m_buttonBox.button(RobotMap.kToggleIntake).toggleOnTrue(m_intakeSubsystem.toggleIntakeCommand());
-    m_buttonBox.button(RobotMap.kReverseIntake).whileTrue(m_intakeSubsystem.reverseIntakeCommand());
-    m_buttonBox.button(RobotMap.kToggleHopper).toggleOnTrue(m_hopperSubsystem.toggleHopperCommand());
-    m_buttonBox.button(RobotMap.kReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
-    m_buttonBox.button(RobotMap.kFeedShooter).whileTrue(
-        new StartEndCommand(() -> m_FeederSubsystem.startFeeder(), () -> m_FeederSubsystem.stopFeeder(),
-            m_FeederSubsystem));
-    m_buttonBox.button(RobotMap.kReverseFeeder).whileTrue(m_FeederSubsystem.reverseFeederCommand());
+    // m_buttonBox.button(RobotMap.kRetractIntake).onTrue(m_intakeSubsystem.retractIntakeCommand());
+    // m_buttonBox.button(RobotMap.kToggleIntake).toggleOnTrue(m_intakeSubsystem.toggleIntakeCommand());
+    // m_buttonBox.button(RobotMap.kReverseIntake).whileTrue(m_intakeSubsystem.reverseIntakeCommand());
+    // m_buttonBox.button(RobotMap.kToggleHopper).toggleOnTrue(m_hopperSubsystem.toggleHopperCommand());
+    // m_buttonBox.button(RobotMap.kReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
+    // m_buttonBox.button(RobotMap.kFeedShooter).whileTrue(
+    //     new StartEndCommand(() -> m_FeederSubsystem.startFeeder(), () -> m_FeederSubsystem.stopFeeder(),
+    //         m_FeederSubsystem));
+    // m_buttonBox.button(RobotMap.kReverseFeeder).whileTrue(m_FeederSubsystem.reverseFeederCommand());
     m_buttonBox.button(RobotMap.kSuspendAutoTurret).toggleOnTrue(new StartEndCommand(
         () -> m_turretSubsystem.setSuspendAutoTurret(true),
         () -> m_turretSubsystem.setSuspendAutoTurret(false)));
@@ -157,20 +154,23 @@ public class RobotContainer {
   }
 
   private Command startShootingCommand() {
-    return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem)
-        .alongWith(m_hopperSubsystem.startHopperCommand()
-            .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
+    return new InstantCommand();
+    // return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem)
+    //     .alongWith(m_hopperSubsystem.startHopperCommand()
+    //         .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
   }
 
   private Command stopShootingCommand() {
-    return m_ShooterSubsytem.shooterToIdleCommand()
-        .andThen(new InstantCommand(() -> {
-          m_hopperSubsystem.stopHopper();
-        }));
+    return new InstantCommand();
+    // return m_ShooterSubsytem.shooterToIdleCommand()
+    //     .andThen(new InstantCommand(() -> {
+    //       m_hopperSubsystem.stopHopper();
+    //     }));
   }
 
   private Command extendIntakeCommand() {
-    return m_intakeSubsystem.extendIntakeCommand();
+    return new InstantCommand();
+    // return m_intakeSubsystem.extendIntakeCommand();
   }
 
   private Command startAndStopShooting(double durationInSeconds) {

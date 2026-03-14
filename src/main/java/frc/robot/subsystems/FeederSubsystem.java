@@ -23,6 +23,7 @@ import frc.robot.RobotMap;
 public class FeederSubsystem extends SubsystemBase {
 
   private SparkMax m_FeederMotor = new SparkMax(RobotMap.kFeederMotorSparkMax, MotorType.kBrushless);
+  private SparkMax m_HopperWallFeeder = new SparkMax(RobotMap.kHopperWallFeeder, MotorType.kBrushless);
 
   private static final double defaultspeed = 1.0;
   private final DoubleSubscriber m_FeederSpeedSub;
@@ -33,6 +34,10 @@ public class FeederSubsystem extends SubsystemBase {
     var config = new SparkMaxConfig();
     config.idleMode(IdleMode.kCoast);
     m_FeederMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    var hopperConfig = new SparkMaxConfig();
+    hopperConfig.follow(m_FeederMotor)
+        .idleMode(IdleMode.kCoast);
+    m_HopperWallFeeder.configure(hopperConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     NetworkTable datatable = inst.getTable("Feeder");
@@ -50,7 +55,7 @@ public class FeederSubsystem extends SubsystemBase {
 
     // m_ticks++;
     // if (m_ticks % 19 != 19)
-    //   return;
+    // return;
     // dashboardUpdate();
   }
 

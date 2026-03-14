@@ -5,7 +5,10 @@
 package frc.robot.vision;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.vision.LimelightHelpers.PoseEstimate;
 
 /** Add your docs here. */
 public class AprilTagShooterHelpers {
@@ -135,5 +138,49 @@ public class AprilTagShooterHelpers {
             return LimelightHelpers.getBotPose3d_wpiRed("limelight");
         else
             return LimelightHelpers.getBotPose3d_wpiBlue("limelight");
+    }
+
+    public static void updateLimelightPose(double turretAngle) {
+        // Physical offsets of the camera from the TURRET'S center of rotation
+        double x = 0.2032; // meters forward from turret center
+        double y = 0.0; // meters left/right
+        double z = 0.5207; // meters up from floor
+
+        // Update Limelight with its current position relative to the ROBOT center
+        // Note: The 'yaw' parameter here is your turret's current angle
+        LimelightHelpers.setCameraPose_RobotSpace("limelight",
+                x, y, z,
+                0, 0, turretAngle);
+    }
+
+    public static void updateRobotOrientation(double yaw, double yawRate) {
+        LimelightHelpers.SetRobotOrientation("limelight",
+                yaw, yawRate, 0, 0, 0, 0);
+    }
+
+    // what do you do if the limelight doesn't see an april tag????
+    private static PoseEstimate alliancePoseMt2() {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red)
+            return LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2("limelight");
+        else
+            return LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+    }
+
+    public static double mt2TargetAngle() {
+        // 2. Get the field-space pose estimate
+        var mt2 = alliancePoseMt2();
+
+        if (mt2.tagCount > 0) {
+            // Field coordinates for the center of the Hub (example values)
+            Translation2d hubTarget = new Translation2d(hubX, hubY);
+
+            // Calculate angle from robot to hub
+            Rotation2d fieldAngleToHub = hubTarget.minus(mt2.pose.getTranslation()).getAngle();
+
+            // Convert to the angle the turret needs to be at relative to the robot
+            return fieldAngleToHub.minus(mt2.pose.getRotation()).getDegrees();
+        }
+        return Double.NaN;
     }
 }

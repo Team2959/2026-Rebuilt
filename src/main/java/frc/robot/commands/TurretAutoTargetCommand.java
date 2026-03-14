@@ -7,20 +7,21 @@ package frc.robot.commands;
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.vision.AprilTagShooterHelpers;
 
 public class TurretAutoTargetCommand extends Command {
   private final TurretSubsystem m_turretSubsystem;
-  private Supplier<Double> m_robotAngleSupplier;
+  private DriveSubsystem m_driveSubsystem;
   private Supplier<Boolean> m_isShooting;
 
   /** Creates a new TurretAutoTarget. */
-  public TurretAutoTargetCommand(TurretSubsystem turretSubsystem, Supplier<Double> robotAngle, Supplier<Boolean> isShooting) {
+  public TurretAutoTargetCommand(TurretSubsystem turretSubsystem, DriveSubsystem driveSubsystem, Supplier<Boolean> isShooting) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(turretSubsystem);
     m_turretSubsystem = turretSubsystem;
-    m_robotAngleSupplier = robotAngle;
+    m_driveSubsystem = driveSubsystem;
     m_isShooting = isShooting;
   }
 
@@ -33,10 +34,15 @@ public class TurretAutoTargetCommand extends Command {
   @Override
   public void execute() {
     if (m_turretSubsystem.getSuspendAutoTurret()) return;
-    var target = AprilTagShooterHelpers.turretAngleToTarget(m_robotAngleSupplier.get(), m_isShooting.get());
+    AprilTagShooterHelpers.updateLimelightPose(m_turretSubsystem.currentAngle());
+    AprilTagShooterHelpers.updateRobotOrientation(m_driveSubsystem.getAngle().getDegrees(), m_driveSubsystem.getYawRate());
+    var mt2Target = AprilTagShooterHelpers.mt2TargetAngle();
+    if (!Double.isNaN(mt2Target))
+      m_turretSubsystem.goToTargetAngle(mt2Target);
+    var target = AprilTagShooterHelpers.turretAngleToTarget(m_driveSubsystem.getModuloAngle(), m_isShooting.get());
     if (Double.isNaN(target))
       return;
-    m_turretSubsystem.goToTargetAngle(target);
+    m_turretSubsystem.setMt2Target(target);
   }
 
   // Called once the command ends or is interrupted.

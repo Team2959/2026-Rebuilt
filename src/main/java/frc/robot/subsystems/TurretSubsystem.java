@@ -49,12 +49,14 @@ public class TurretSubsystem extends SubsystemBase {
   private final double kMinTurrentAngle = -kMaxTurretAngle;
   private double m_requestedAngle = 0;
   private double m_rawRequest = 0;
+  private double m_mt2Target = 0;
   private boolean m_suspendAutoTurret = false;
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
   private final DoublePublisher m_aprilTagTargetPub;
   private final DoublePublisher m_requestTargetPub;
   private final DoublePublisher m_correctedTargetPub;
+  private final DoublePublisher m_mt2TargetPub;
 
   private final MutVoltage m_appliedVoltage = Volts.mutable(0);
   private final MutAngle m_angle = Degrees.mutable(0);
@@ -109,6 +111,8 @@ public class TurretSubsystem extends SubsystemBase {
     m_requestTargetPub = topic2.publish();
     var topic3 = m_networkTable.networkTable().getDoubleTopic("Corrected 180 Angle");
     m_correctedTargetPub = topic3.publish();
+    var topic4 = m_networkTable.networkTable().getDoubleTopic("MT2 Target");
+    m_mt2TargetPub = topic4.publish();
 
     goToTargetAngle(0);
   }
@@ -130,6 +134,7 @@ public class TurretSubsystem extends SubsystemBase {
     m_aprilTagTargetPub.set(AprilTagShooterHelpers.turretAngleToTarget(0, true));
     m_requestTargetPub.set(m_rawRequest);
     m_correctedTargetPub.set(m_requestedAngle);
+    m_mt2TargetPub.set(m_mt2Target);
   }
 
   public void stopTurret() {
@@ -187,5 +192,9 @@ public class TurretSubsystem extends SubsystemBase {
 
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return m_sysIdRoutine.dynamic(direction);
+  }
+
+  public void setMt2Target(double target){
+    m_mt2Target = target;
   }
 }

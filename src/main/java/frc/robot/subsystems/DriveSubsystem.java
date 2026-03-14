@@ -275,6 +275,10 @@ public class DriveSubsystem extends SubsystemBase {
         return m_navX.getRotation2d();
     }
 
+    public double getYawRate() {
+        return m_navX.getRate();
+    }
+
     public double getModuloAngle() {
         return m_navX.getRotation2d().getDegrees() % 360;
     }
