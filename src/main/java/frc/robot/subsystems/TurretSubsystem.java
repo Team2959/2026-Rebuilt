@@ -42,7 +42,7 @@ public class TurretSubsystem extends SubsystemBase {
 
   private static final double kStatic = 0.18;// 0.22
   // initial testing had kP 0.015, but jerky at end
-  private static final PidValuesRecord pidValues = new PidValuesRecord(0.007, 0, 0);
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.1, 0, 0);
   private static final double kPositionConversionFactor = 360.0 / 25.6;
 
   private final double kMaxTurretAngle = 90;
@@ -129,19 +129,19 @@ public class TurretSubsystem extends SubsystemBase {
     m_turretMotor.set(0);
   }
 
-  private final double kDegreeLimiter = 20.0;
+  // private final double kDegreeLimiter = 20.0;
 
   public void goToTargetAngle(double targetAngle) {
     m_rawRequest = targetAngle;
     targetAngle = m_requestedAngle = keepAngleInOneEightySpace(targetAngle);
     var currentAngle = currentAngle();
-    if (Math.abs(targetAngle - currentAngle) > kDegreeLimiter) {
-      if (targetAngle > currentAngle)
-        targetAngle = currentAngle + kDegreeLimiter;
-      else
-        targetAngle = currentAngle - kDegreeLimiter;
-    }
-    if (targetAngle < kMinTurrentAngle || targetAngle > kMaxTurretAngle)
+    // if (Math.abs(targetAngle - currentAngle) > kDegreeLimiter) {
+    //   if (targetAngle > currentAngle)
+    //     targetAngle = currentAngle + kDegreeLimiter;
+    //   else
+    //     targetAngle = currentAngle - kDegreeLimiter;
+    // }
+    if (targetAngle < kMinTurrentAngle || targetAngle > kMaxTurretAngle || Math.abs(targetAngle - currentAngle) < 1.0)
       return;
     m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
     // m_turretController.setSetpoint(targetAngle, ControlType.kMAXMotionPositionControl);

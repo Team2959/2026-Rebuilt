@@ -17,7 +17,6 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsytem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.vision.AprilTagShooterHelpers;
-import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -37,8 +36,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
-  // private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
-  // private final HopperSubsystem m_hopperSubsystem = new HopperSubsystem();
+  private final IntakeSubsystem m_intakeSubsystem = new IntakeSubsystem();
+  private final HopperSubsystem m_hopperSubsystem = new HopperSubsystem();
   private final FeederSubsystem m_FeederSubsystem = new FeederSubsystem();
   private final ShooterSubsytem m_ShooterSubsytem = new ShooterSubsytem();
   private final TurretSubsystem m_turretSubsystem = new TurretSubsystem();
@@ -111,11 +110,11 @@ public class RobotContainer {
     // m_leftJoystick.button(2).whileTrue(m_turretSubsystem.sysIdDynamic(Direction.kReverse));
 
     m_buttonBox.button(RobotMap.kExtendIntake).onTrue(extendIntakeCommand());
-    // m_buttonBox.button(RobotMap.kRetractIntake).onTrue(m_intakeSubsystem.retractIntakeCommand());
-    // m_buttonBox.button(RobotMap.kToggleIntake).toggleOnTrue(m_intakeSubsystem.toggleIntakeCommand());
-    // m_buttonBox.button(RobotMap.kReverseIntake).whileTrue(m_intakeSubsystem.reverseIntakeCommand());
-    // m_buttonBox.button(RobotMap.kToggleHopper).toggleOnTrue(m_hopperSubsystem.toggleHopperCommand());
-    // m_buttonBox.button(RobotMap.kReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
+    m_buttonBox.button(RobotMap.kRetractIntake).onTrue(m_intakeSubsystem.retractIntakeCommand());
+    m_buttonBox.button(RobotMap.kToggleIntake).toggleOnTrue(m_intakeSubsystem.toggleIntakeCommand());
+    m_buttonBox.button(RobotMap.kReverseIntake).whileTrue(m_intakeSubsystem.reverseIntakeCommand());
+    m_buttonBox.button(RobotMap.kToggleHopper).toggleOnTrue(m_hopperSubsystem.toggleHopperCommand());
+    m_buttonBox.button(RobotMap.kReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
     m_buttonBox.button(RobotMap.kFeedShooter).whileTrue(
         new StartEndCommand(() -> m_FeederSubsystem.startFeeder(), () -> m_FeederSubsystem.stopFeeder(),
             m_FeederSubsystem));
@@ -189,22 +188,19 @@ public class RobotContainer {
 
   private Command startShootingCommand() {
     return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem, () -> { return m_targetDistance; })
-    //     .alongWith(m_hopperSubsystem.startHopperCommand()
-            .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem))
-            // )
-            ;
+        .alongWith(m_hopperSubsystem.startHopperCommand()
+            .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
   }
 
   private Command stopShootingCommand() {
-    return m_ShooterSubsytem.shooterToIdleCommand();
-    //     .andThen(new InstantCommand(() -> {
-    //       m_hopperSubsystem.stopHopper();
-    //     }));
+    return m_ShooterSubsytem.shooterToIdleCommand()
+        .andThen(new InstantCommand(() -> {
+          m_hopperSubsystem.stopHopper();
+        }));
   }
 
   private Command extendIntakeCommand() {
-    return new InstantCommand();
-    // return m_intakeSubsystem.extendIntakeCommand();
+    return m_intakeSubsystem.extendIntakeCommand();
   }
 
   private Command startAndStopShooting(double durationInSeconds) {
