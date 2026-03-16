@@ -140,8 +140,9 @@ public class ShooterSubsytem extends SubsystemBase {
     var upperSpeed = 46.0;
     var lowerDistance = 2.0;
     if (distance >= 4) {
-      return 65;
+      return Math.max(105, 65 + (distance - 4) * 20);
     } else if (distance >= 3.5) {
+      upperSpeed = 65;
       lowerSpeed = 55;
       lowerDistance = 3.5;
     } else if (distance >= 3) {

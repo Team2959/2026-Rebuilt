@@ -32,7 +32,9 @@ import frc.robot.robotarians.PidValuesRecord;
 public class IntakeSubsystem extends SubsystemBase {
   public enum ExtendIntakePositionType {
     Retracted,
-    Extended
+    Extended,
+    JostleUp,
+    JostleDown
   }
 
   private SparkMax m_intakeMotor = new SparkMax(RobotMap.kIntakeMotorSparkMax, MotorType.kBrushless);
@@ -44,14 +46,6 @@ public class IntakeSubsystem extends SubsystemBase {
   private static final double defaultSpeed = 1.0;
   private final DoubleSubscriber m_IntakeSpeedSub;
   private double m_IntakeSpeed = defaultSpeed;
-
-  private static final double defaultReverseSpeed = -.5;
-  private final DoubleSubscriber m_ReverseIntakeSpeedSub;
-  private double m_reverseIntakeSpeed = defaultReverseSpeed;
-
-  // measured rotations from starting 0 position
-  private static final double defaultExtendedPosition = 13.75;
-  private boolean m_isExtended = false;
 
   // power and current limiting
   private static final int kExtendCurrentLimitAmps = 20;
@@ -67,8 +61,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private static final PidValuesRecord retactPidValues = new PidValuesRecord(0.2, 0.0, 0);
   // kSlot1 for extending with more power, separate tuning
   private static final PidValuesRecord extendPidValues = new PidValuesRecord(0.15, 0.0, 0);
-  private static final PidValuesRecord extendHoldPidValues = new PidValuesRecord(5.0, 0.0, 0);
-  private static final double kExtendMaxOutput = 1.0; // was 0.5 in initial testing
+  private static final double kExtendMaxOutput = 1.0;
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Intake Extend",
       retactPidValues);
@@ -94,7 +87,6 @@ public class IntakeSubsystem extends SubsystemBase {
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .pid(retactPidValues.kP(), retactPidValues.kI(), retactPidValues.kD())
         .pid(extendPidValues.kP(), extendPidValues.kI(), extendPidValues.kD(), ClosedLoopSlot.kSlot1)
-        .pid(extendHoldPidValues.kP(), extendHoldPidValues.kI(), extendHoldPidValues.kD(), ClosedLoopSlot.kSlot2)
         .outputRange(-kExtendMaxOutput, kExtendMaxOutput);
     m_extendConfig.closedLoop.feedForward.kS(kStatic).kCos(kCosG).kCosRatio(kCosRatio);
     m_extendIntakeMotor.configure(m_extendConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -106,10 +98,6 @@ public class IntakeSubsystem extends SubsystemBase {
     speedTopic.publish().set(defaultSpeed);
     m_IntakeSpeedSub = speedTopic.subscribe(defaultSpeed);
 
-    var reverseSpeedTopic = datatable.getDoubleTopic("ReverseIntakeSpeed");
-    reverseSpeedTopic.publish().set(defaultReverseSpeed);
-    m_ReverseIntakeSpeedSub = reverseSpeedTopic.subscribe(defaultReverseSpeed);
-
     var currentLimitTopic = m_networkTable.networkTable().getIntegerTopic("Current Limit");
     currentLimitTopic.publish().set(kExtendCurrentLimitAmps);
     m_currentLimitSub = currentLimitTopic.subscribe(kExtendCurrentLimitAmps);
@@ -118,7 +106,7 @@ public class IntakeSubsystem extends SubsystemBase {
     maxOutputTopic.publish().set(kExtendMaxOutput);
     m_maxOutputSub = maxOutputTopic.subscribe(kExtendMaxOutput);
 
-    setExtendPosition(0);
+    setExtendPosition(0, ClosedLoopSlot.kSlot0);
   }
 
   @Override
@@ -128,22 +116,14 @@ public class IntakeSubsystem extends SubsystemBase {
     if (RobotContainer.m_ticks % 15 != 3)
       return;
 
-    if (!m_isExtended && isExtended(1)) {
-      m_isExtended = true;
-      m_extendController.setSetpoint(defaultExtendedPosition, ControlType.kPosition, ClosedLoopSlot.kSlot2);
-    } else if (m_isExtended && !isExtended(5)) {
-      m_isExtended = false;
-    }
-
     dashboardUpdate();
   }
 
   private void dashboardUpdate() {
     m_IntakeSpeed = m_IntakeSpeedSub.get();
-    m_reverseIntakeSpeed = m_ReverseIntakeSpeedSub.get();
 
     m_networkTable.dashboardUpdate(m_extendIntakeMotor, m_extendEncoder,
-        m_extendConfig, (t) -> setExtendPosition(t),
+        m_extendConfig, (t) -> setExtendPosition(t, ClosedLoopSlot.kSlot0),
         (b) -> moreMotorUpdates());
   }
 
@@ -156,7 +136,7 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private void reverseIntake() {
-    m_intakeMotor.set(m_reverseIntakeSpeed);
+    m_intakeMotor.set(-m_IntakeSpeed * 0.5);
   }
 
   public Command reverseIntakeCommand() {
@@ -167,17 +147,18 @@ public class IntakeSubsystem extends SubsystemBase {
     return new StartEndCommand(() -> startIntake(), () -> stopIntake(), this);
   }
 
-  private void setExtendPosition(double position) {
+  private void setExtendPosition(double position, ClosedLoopSlot slot) {
     // currnently in units of rotations
-    m_extendController.setSetpoint(position, ControlType.kPosition);
+    m_extendController.setSetpoint(position, ControlType.kPosition, slot);
   }
 
-  private void setExtendPosition(ExtendIntakePositionType target) {
-    if (target == ExtendIntakePositionType.Extended) {
-      m_extendController.setSetpoint(defaultExtendedPosition, ControlType.kPosition, ClosedLoopSlot.kSlot1);
-      return;
+  public void setExtendPosition(ExtendIntakePositionType targetPosition) {
+    var position = positionFromPositionType(targetPosition);
+    var slot = ClosedLoopSlot.kSlot0;
+    if (targetPosition == ExtendIntakePositionType.Extended) {
+      slot = ClosedLoopSlot.kSlot1;
     }
-    setExtendPosition(0);
+    setExtendPosition(position, slot);
   }
 
   public Command extendIntakeCommand() {
@@ -200,11 +181,20 @@ public class IntakeSubsystem extends SubsystemBase {
     m_extendConfig.closedLoop.outputRange(-maxOutput, maxOutput);
   }
 
-  public boolean isRetracted() {
-    return m_extendEncoder.getPosition() < 1;
+  public boolean isAtPosition(ExtendIntakePositionType position) {
+    return Math.abs(m_extendEncoder.getPosition() - positionFromPositionType(position)) < 1;
   }
 
-  public boolean isExtended(double delta) {
-    return Math.abs(m_extendEncoder.getPosition() - defaultExtendedPosition) < delta;
+  private double positionFromPositionType(ExtendIntakePositionType position) {
+    switch (position) {
+      case Extended:
+        return 13.75;
+      case JostleUp:
+        return 8;
+      case JostleDown:
+        return 11;
+      default:
+        return 0;
+    }
   }
 }

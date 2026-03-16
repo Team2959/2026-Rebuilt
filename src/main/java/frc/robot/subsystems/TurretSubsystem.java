@@ -135,13 +135,15 @@ public class TurretSubsystem extends SubsystemBase {
     m_rawRequest = targetAngle;
     targetAngle = m_requestedAngle = keepAngleInOneEightySpace(targetAngle);
     var currentAngle = currentAngle();
+    if (Math.abs(targetAngle - currentAngle) < 1.0)
+      return;
     // if (Math.abs(targetAngle - currentAngle) > kDegreeLimiter) {
     //   if (targetAngle > currentAngle)
     //     targetAngle = currentAngle + kDegreeLimiter;
     //   else
     //     targetAngle = currentAngle - kDegreeLimiter;
     // }
-    if (targetAngle < kMinTurrentAngle || targetAngle > kMaxTurretAngle || Math.abs(targetAngle - currentAngle) < 1.0)
+    if (targetAngle < kMinTurrentAngle || targetAngle > kMaxTurretAngle)
       return;
     m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
     // m_turretController.setSetpoint(targetAngle, ControlType.kMAXMotionPositionControl);

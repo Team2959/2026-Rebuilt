@@ -5,6 +5,7 @@
 package frc.robot;
 
 import frc.robot.commands.AutoFeedShooterCommand;
+import frc.robot.commands.IntakeJostleWhileShootingCommand;
 import frc.robot.commands.ShooterVelocityfromDistanceCommand;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.commands.TurretAutoTargetCommand;
@@ -15,6 +16,7 @@ import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsytem;
+import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.vision.AprilTagShooterHelpers;
 
@@ -32,6 +34,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
@@ -45,7 +48,8 @@ public class RobotContainer {
   private final Conditioning m_driveXConditioning = new Conditioning();
   private final Conditioning m_driveYConditioning = new Conditioning();
   private final Conditioning m_turnConditioning = new Conditioning();
-  private static double m_speedMultiplier = 0.85;
+  private double m_speedMultiplier = 0.85;
+  private double m_shootingSpeedReduction = 1.0;
 
   private final CommandJoystick m_leftJoystick = new CommandJoystick(RobotMap.kLeftJoystick);
   private final CommandJoystick m_rightJoystick = new CommandJoystick(RobotMap.kRightJoystick);
@@ -93,7 +97,7 @@ public class RobotContainer {
         () -> getDriveXInput(), () -> getDriveYInput(), () -> getTurnInput(),
         () -> m_robot.isTeleopEnabled()));
 
-    m_turretSubsystem.setDefaultCommand(new TurretAutoTargetCommand(m_turretSubsystem, 
+    m_turretSubsystem.setDefaultCommand(new TurretAutoTargetCommand(m_turretSubsystem,
         () -> {
           return m_targetTurretAngle;
         }));
@@ -127,26 +131,31 @@ public class RobotContainer {
 
     m_buttonBox.button(RobotMap.kFire).onTrue(startShootingCommand());
     m_buttonBox.button(RobotMap.kStopFire).onTrue(stopShootingCommand());
+
+    // new Trigger(() -> {
+    //   return m_ShooterSubsytem.getShooterState() == ShooterStateType.Shooting;
+    // })
+    //     .whileTrue(new WaitCommand(3).andThen(new IntakeJostleWhileShootingCommand(m_intakeSubsystem)));
   }
 
   public double getDriveXInput() {
     // We getY() here because of the FRC coordinate system being turned 90 degrees
     return m_driveXConditioning.condition(-m_leftJoystick.getY())
         * DriveSubsystem.kMaxSpeedMetersPerSecond
-        * m_speedMultiplier;
+        * m_speedMultiplier * m_shootingSpeedReduction;
   }
 
   public double getDriveYInput() {
     // We getX() here becasuse of the FRC coordinate system being turned 90 degrees
     return m_driveYConditioning.condition(-m_leftJoystick.getX())
         * DriveSubsystem.kMaxSpeedMetersPerSecond
-        * m_speedMultiplier;
+        * m_speedMultiplier * m_shootingSpeedReduction;
   }
 
   public double getTurnInput() {
     return m_turnConditioning.condition(-m_rightJoystick.getX())
         * DriveSubsystem.kMaxAngularSpeedRadiansPerSecond
-        * m_speedMultiplier;
+        * m_speedMultiplier * m_shootingSpeedReduction;
   }
 
   public void initialize() {
@@ -156,10 +165,12 @@ public class RobotContainer {
   }
 
   public static int m_ticks = 0;
-  public void robotPeriodic(){
+
+  public void robotPeriodic() {
     // MegaTag2 targeting
     AprilTagShooterHelpers.updateLimelightPose(m_turretSubsystem.currentAngle());
-    AprilTagShooterHelpers.updateRobotOrientation(m_driveSubsystem.getAngle().getDegrees(), m_driveSubsystem.getYawRate());
+    AprilTagShooterHelpers.updateRobotOrientation(m_driveSubsystem.getAngle().getDegrees(),
+        m_driveSubsystem.getYawRate());
     var mt2 = AprilTagShooterHelpers.alliancePoseMt2();
     m_targetTurretAngle = AprilTagShooterHelpers.mt2TargetAngle(mt2, m_ShooterSubsytem.isShooting());
     m_targetDistance = AprilTagShooterHelpers.mt2DistanceToTaget(mt2, m_ShooterSubsytem.isShooting());
@@ -174,20 +185,23 @@ public class RobotContainer {
     m_atDistancePub.set(Math.abs(m_targetDistance - 2.0) < 0.2);
   }
 
-  public void autoInit(){
+  public void autoInit() {
     // uncomment to force fixed shooter speed and/or turret angle in auto
     // m_ShooterSubsytem.setFixedShooterSpeed(true);
     // m_turretSubsystem.setSuspendAutoTurret(true);
   }
 
-  public void teleOpInit(){
+  public void teleOpInit() {
     // uncomment to force fixed shooter speed and/or turret angle in teleop
     // m_ShooterSubsytem.setFixedShooterSpeed(true);
     // m_turretSubsystem.setSuspendAutoTurret(true);
   }
 
   private Command startShootingCommand() {
-    return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem, () -> { return m_targetDistance; })
+    return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem, () -> {
+      m_shootingSpeedReduction = 0.75;
+      return m_targetDistance;
+    })
         .alongWith(m_hopperSubsystem.startHopperCommand()
             .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
   }
@@ -195,6 +209,7 @@ public class RobotContainer {
   private Command stopShootingCommand() {
     return m_ShooterSubsytem.shooterToIdleCommand()
         .andThen(new InstantCommand(() -> {
+          m_shootingSpeedReduction = 1.0;
           m_hopperSubsystem.stopHopper();
         }));
   }
