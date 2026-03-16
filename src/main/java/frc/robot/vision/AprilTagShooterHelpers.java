@@ -142,9 +142,9 @@ public class AprilTagShooterHelpers {
 
     public static void updateLimelightPose(double turretAngle) {
         // Physical offsets of the camera from the TURRET'S center of rotation
-        double x = 0.2032; // meters forward from turret center
+        double x = 0.19984034; // meters forward from turret center
         double y = 0.0; // meters left/right
-        double z = 0.5207; // meters up from floor
+        double z = 0.51202909; // meters up from floor
 
         // Update Limelight with its current position relative to the ROBOT center
         // Note: The 'yaw' parameter here is your turret's current angle
