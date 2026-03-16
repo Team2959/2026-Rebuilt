@@ -18,6 +18,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsytem;
 import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
 import frc.robot.subsystems.TurretSubsystem;
+import frc.robot.subsystems.IntakeSubsystem.ExtendIntakePositionType;
 import frc.robot.vision.AprilTagShooterHelpers;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -133,9 +134,10 @@ public class RobotContainer {
     m_buttonBox.button(RobotMap.kStopFire).onTrue(stopShootingCommand());
 
     // new Trigger(() -> {
-    //   return m_ShooterSubsytem.getShooterState() == ShooterStateType.Shooting;
+    // return m_ShooterSubsytem.getShooterState() == ShooterStateType.Shooting;
     // })
-    //     .whileTrue(new WaitCommand(3).andThen(new IntakeJostleWhileShootingCommand(m_intakeSubsystem)));
+    // .whileTrue(new WaitCommand(3).andThen(new
+    // IntakeJostleWhileShootingCommand(m_intakeSubsystem)));
   }
 
   public double getDriveXInput() {
@@ -199,23 +201,27 @@ public class RobotContainer {
 
   private Command startShootingCommand() {
     return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem, () -> {
-      m_shootingSpeedReduction = 0.75;
       return m_targetDistance;
     })
         .alongWith(m_hopperSubsystem.startHopperCommand()
-            .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem)));
+            .alongWith(new InstantCommand(() -> {
+              m_shootingSpeedReduction = 0.75;
+            })
+                .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem))));
   }
 
   private Command stopShootingCommand() {
     return m_ShooterSubsytem.shooterToIdleCommand()
         .andThen(new InstantCommand(() -> {
           m_shootingSpeedReduction = 1.0;
-          m_hopperSubsystem.stopHopper();
+          if (m_intakeSubsystem.isAtPosition(ExtendIntakePositionType.Retracted))
+            m_hopperSubsystem.stopHopper();
         }));
   }
 
   private Command extendIntakeCommand() {
-    return m_intakeSubsystem.extendIntakeCommand();
+    return m_intakeSubsystem.extendIntakeCommand()
+        .alongWith(m_hopperSubsystem.startHopperCommand());
   }
 
   private Command startAndStopShooting(double durationInSeconds) {
