@@ -18,7 +18,6 @@ public class TurretAutoTargetCommand extends Command {
   public TurretAutoTargetCommand(TurretSubsystem turretSubsystem,
    Supplier<Double> targetAngle,
    Supplier<Double> yawRate) {
-    // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(turretSubsystem);
     m_turretSubsystem = turretSubsystem;
     m_targetAngle = targetAngle;
@@ -38,11 +37,7 @@ public class TurretAutoTargetCommand extends Command {
       return;
     }
 
-    // MegaTag2 targeting testing
-    // AprilTagShooterHelpers.updateLimelightPose(m_turretSubsystem.currentAngle());
-    // AprilTagShooterHelpers.updateRobotOrientation(m_driveSubsystem.getAngle().getDegrees(),
-    // m_driveSubsystem.getYawRate());
-    // var mt2Target = AprilTagShooterHelpers.mt2TargetAngle(m_isShooting.get());
+    // MegaTag2 targeting
     var mt2Target = m_targetAngle.get();
     if (!Double.isNaN(mt2Target))
       m_turretSubsystem.goToTargetAngle(mt2Target, m_yawRate.get());

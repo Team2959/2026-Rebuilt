@@ -40,20 +40,19 @@ public class TurretSubsystem extends SubsystemBase {
   private SparkClosedLoopController m_turretController;
   private final SparkMaxConfig m_turretConfig;
 
-  private static final double kStatic = 0.18;// 0.22
+  private static final double kStatic = 0.25;
   // initial testing had kP 0.015, but jerky at end
-  private static final PidValuesRecord pidValues = new PidValuesRecord(0.1, 0, 0);
+  private static final PidValuesRecord pidValues = new PidValuesRecord(0.002, 0, 0);
   private static final double kPositionConversionFactor = 360.0 / 25.6;
 
-  private final double kMaxTurretAngle = 90;
-  private final double kMinTurretAngle = -kMaxTurretAngle;
+  private final double kMaxTurretAngle = 110;
+  private final double kMinTurretAngle = -115;
+  private final double kDegreeLimiter = 20.0;
   private final double kTurretCrossoverBand = 45;
   private double m_requestedAngle = 0;
-  private double m_rawRequest = 0;
   private boolean m_suspendAutoTurret = false;
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
-  private final DoublePublisher m_requestTargetPub;
   private final DoublePublisher m_correctedTargetPub;
 
   private final MutVoltage m_appliedVoltage = Volts.mutable(0);
@@ -89,7 +88,7 @@ public class TurretSubsystem extends SubsystemBase {
     m_turretEncoder = (SparkRelativeEncoder) m_turretMotor.getEncoder();
     m_turretController = m_turretMotor.getClosedLoopController();
     m_turretConfig = new SparkMaxConfig();
-    m_turretConfig.idleMode(IdleMode.kBrake).inverted(true);
+    m_turretConfig.idleMode(IdleMode.kBrake).inverted(true).smartCurrentLimit(60);
 
     // measured on turret that it took 25.6 motor rotations to turn 360 degrees
     m_turretConfig.encoder.positionConversionFactor(kPositionConversionFactor)
@@ -103,12 +102,10 @@ public class TurretSubsystem extends SubsystemBase {
     m_turretMotor.configure(m_turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     // additional publisher
-    var topic = m_networkTable.networkTable().getDoubleTopic("Requested Angle");
-    m_requestTargetPub = topic.publish();
-    topic = m_networkTable.networkTable().getDoubleTopic("Corrected 180 Angle");
+    var topic = m_networkTable.networkTable().getDoubleTopic("Corrected 180 Angle");
     m_correctedTargetPub = topic.publish();
 
-    goToTargetAngle(0, 0);
+    setAngleSetpoint(0);
   }
 
   @Override
@@ -122,7 +119,6 @@ public class TurretSubsystem extends SubsystemBase {
         (t) -> goToTargetAngle(t, 0),
         (b) -> {
         });
-    // m_requestTargetPub.set(m_rawRequest);
     m_correctedTargetPub.set(m_requestedAngle);
   }
 
@@ -130,24 +126,13 @@ public class TurretSubsystem extends SubsystemBase {
     m_turretMotor.set(0);
   }
 
-  // private final double kDegreeLimiter = 20.0;
-
   public void goToTargetAngle(double targetAngle, double yawRate) {
-    m_rawRequest = targetAngle;
-
     targetAngle = m_requestedAngle = keepAngleInOneEightySpace(targetAngle);
 
     var currentAngle = currentAngle();
 
     if (Math.abs(targetAngle - currentAngle) < 1.0)
       return;
-
-      // if (Math.abs(targetAngle - currentAngle) > kDegreeLimiter) {
-    // if (targetAngle > currentAngle)
-    // targetAngle = currentAngle + kDegreeLimiter;
-    // else
-    // targetAngle = currentAngle - kDegreeLimiter;
-    // }
 
     if (targetAngle > kMaxTurretAngle + kTurretCrossoverBand && (yawRate > 0)) {
       targetAngle = -kMaxTurretAngle;
@@ -159,7 +144,19 @@ public class TurretSubsystem extends SubsystemBase {
 
     if (targetAngle < kMinTurretAngle || targetAngle > kMaxTurretAngle)
       return;
-    m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
+
+    if (Math.abs(targetAngle - currentAngle) > kDegreeLimiter) {
+      if (targetAngle > currentAngle)
+        targetAngle = currentAngle + kDegreeLimiter;
+      else
+        targetAngle = currentAngle - kDegreeLimiter;
+    }
+
+    setAngleSetpoint(targetAngle);
+  }
+
+  private void setAngleSetpoint(double target) {
+    m_turretController.setSetpoint(target, ControlType.kPosition);
     // m_turretController.setSetpoint(targetAngle,
     // ControlType.kMAXMotionPositionControl);
   }
@@ -188,7 +185,7 @@ public class TurretSubsystem extends SubsystemBase {
   public void setSuspendAutoTurret(boolean suspend) {
     m_suspendAutoTurret = suspend;
     if (suspend)
-      m_turretController.setSetpoint(0, ControlType.kPosition);
+      setAngleSetpoint(0);
   }
 
   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
