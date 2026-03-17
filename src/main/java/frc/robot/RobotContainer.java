@@ -101,6 +101,9 @@ public class RobotContainer {
     m_turretSubsystem.setDefaultCommand(new TurretAutoTargetCommand(m_turretSubsystem,
         () -> {
           return m_targetTurretAngle;
+        },
+        () -> {
+          return m_driveSubsystem.getYawRate();
         }));
 
     m_rightJoystick.button(RobotMap.kRightResetNavXButton).onTrue(
@@ -230,8 +233,8 @@ public class RobotContainer {
   }
 
   private void createNamedCommandsForAutos() {
-    NamedCommands.registerCommand("Shoot First 8", startAndStopShooting(3));
-    NamedCommands.registerCommand("Shoot Full Hopper", startAndStopShooting(15));
+    NamedCommands.registerCommand("Shoot First 8", startAndStopShooting(5));
+    NamedCommands.registerCommand("Shoot Full Hopper", startAndStopShooting(10));
     NamedCommands.registerCommand("Start Shooting", startShootingCommand());
     NamedCommands.registerCommand("Stop Shooting", stopShootingCommand());
     NamedCommands.registerCommand("Extend Intake", extendIntakeCommand());

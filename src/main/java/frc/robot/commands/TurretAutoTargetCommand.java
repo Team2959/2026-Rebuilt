@@ -12,13 +12,17 @@ import frc.robot.subsystems.TurretSubsystem;
 public class TurretAutoTargetCommand extends Command {
   private final TurretSubsystem m_turretSubsystem;
   private Supplier<Double> m_targetAngle;
+  private Supplier<Double> m_yawRate;
 
   /** Creates a new TurretAutoTarget. */
-  public TurretAutoTargetCommand(TurretSubsystem turretSubsystem, Supplier<Double> targetAngle) {
+  public TurretAutoTargetCommand(TurretSubsystem turretSubsystem,
+   Supplier<Double> targetAngle,
+   Supplier<Double> yawRate) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(turretSubsystem);
     m_turretSubsystem = turretSubsystem;
     m_targetAngle = targetAngle;
+    m_yawRate = yawRate;
   }
 
   // Called when the command is initially scheduled.
@@ -30,7 +34,7 @@ public class TurretAutoTargetCommand extends Command {
   @Override
   public void execute() {
     if (m_turretSubsystem.getSuspendAutoTurret()) {
-      m_turretSubsystem.goToTargetAngle(0);
+      m_turretSubsystem.goToTargetAngle(0, 0);
       return;
     }
 
@@ -41,7 +45,7 @@ public class TurretAutoTargetCommand extends Command {
     // var mt2Target = AprilTagShooterHelpers.mt2TargetAngle(m_isShooting.get());
     var mt2Target = m_targetAngle.get();
     if (!Double.isNaN(mt2Target))
-      m_turretSubsystem.goToTargetAngle(mt2Target);
+      m_turretSubsystem.goToTargetAngle(mt2Target, m_yawRate.get());
 
     // Robotarians targeting used at Lakeview
     // var target =

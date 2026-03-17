@@ -46,7 +46,8 @@ public class TurretSubsystem extends SubsystemBase {
   private static final double kPositionConversionFactor = 360.0 / 25.6;
 
   private final double kMaxTurretAngle = 90;
-  private final double kMinTurrentAngle = -kMaxTurretAngle;
+  private final double kMinTurretAngle = -kMaxTurretAngle;
+  private final double kTurretCrossoverBand = 45;
   private double m_requestedAngle = 0;
   private double m_rawRequest = 0;
   private boolean m_suspendAutoTurret = false;
@@ -107,7 +108,7 @@ public class TurretSubsystem extends SubsystemBase {
     topic = m_networkTable.networkTable().getDoubleTopic("Corrected 180 Angle");
     m_correctedTargetPub = topic.publish();
 
-    goToTargetAngle(0);
+    goToTargetAngle(0, 0);
   }
 
   @Override
@@ -118,7 +119,7 @@ public class TurretSubsystem extends SubsystemBase {
       return;
 
     m_networkTable.dashboardUpdate(m_turretMotor, m_turretEncoder, m_turretConfig,
-        (t) -> goToTargetAngle(t),
+        (t) -> goToTargetAngle(t, 0),
         (b) -> {
         });
     // m_requestTargetPub.set(m_rawRequest);
@@ -131,22 +132,36 @@ public class TurretSubsystem extends SubsystemBase {
 
   // private final double kDegreeLimiter = 20.0;
 
-  public void goToTargetAngle(double targetAngle) {
+  public void goToTargetAngle(double targetAngle, double yawRate) {
     m_rawRequest = targetAngle;
+
     targetAngle = m_requestedAngle = keepAngleInOneEightySpace(targetAngle);
+
     var currentAngle = currentAngle();
+
     if (Math.abs(targetAngle - currentAngle) < 1.0)
       return;
-    // if (Math.abs(targetAngle - currentAngle) > kDegreeLimiter) {
-    //   if (targetAngle > currentAngle)
-    //     targetAngle = currentAngle + kDegreeLimiter;
-    //   else
-    //     targetAngle = currentAngle - kDegreeLimiter;
+
+      // if (Math.abs(targetAngle - currentAngle) > kDegreeLimiter) {
+    // if (targetAngle > currentAngle)
+    // targetAngle = currentAngle + kDegreeLimiter;
+    // else
+    // targetAngle = currentAngle - kDegreeLimiter;
     // }
-    if (targetAngle < kMinTurrentAngle || targetAngle > kMaxTurretAngle)
+
+    if (targetAngle > kMaxTurretAngle + kTurretCrossoverBand && (yawRate > 0)) {
+      targetAngle = -kMaxTurretAngle;
+    }
+
+    if (targetAngle < -kMaxTurretAngle - kTurretCrossoverBand && (yawRate < 0)) {
+      targetAngle = kMaxTurretAngle;
+    }
+
+    if (targetAngle < kMinTurretAngle || targetAngle > kMaxTurretAngle)
       return;
     m_turretController.setSetpoint(targetAngle, ControlType.kPosition);
-    // m_turretController.setSetpoint(targetAngle, ControlType.kMAXMotionPositionControl);
+    // m_turretController.setSetpoint(targetAngle,
+    // ControlType.kMAXMotionPositionControl);
   }
 
   private double keepAngleInOneEightySpace(double angle) {
