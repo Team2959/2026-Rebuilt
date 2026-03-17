@@ -11,47 +11,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Shoot First 8"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Extend Intake"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Turret to Pos 60"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Extend Intake"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 2.0
-                }
-              }
-            ]
+            "name": "Shoot First 8"
           }
         },
         {
@@ -76,6 +38,18 @@
           "type": "named",
           "data": {
             "name": "Shoot Full Hopper"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Rt Mid to Trench"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Rt Trench Neutral Intake"
           }
         }
       ]
