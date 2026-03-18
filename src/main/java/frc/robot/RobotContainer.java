@@ -217,14 +217,12 @@ public class RobotContainer {
     return m_ShooterSubsytem.shooterToIdleCommand()
         .andThen(new InstantCommand(() -> {
           m_shootingSpeedReduction = 1.0;
-          if (m_intakeSubsystem.isAtPosition(ExtendIntakePositionType.Retracted))
-            m_hopperSubsystem.stopHopper();
+          m_hopperSubsystem.stopHopper();
         }));
   }
 
   private Command extendIntakeCommand() {
-    return m_intakeSubsystem.extendIntakeCommand()
-        .alongWith(m_hopperSubsystem.startHopperCommand());
+    return m_intakeSubsystem.extendIntakeCommand();
   }
 
   private Command startAndStopShooting(double durationInSeconds) {
