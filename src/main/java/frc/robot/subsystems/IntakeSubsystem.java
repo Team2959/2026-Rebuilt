@@ -43,7 +43,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private SparkRelativeEncoder m_extendEncoder;
   private SparkClosedLoopController m_extendController;
 
-  private static final double defaultSpeed = 1.0;
+  private static final double defaultSpeed = 0.8;
   private final DoubleSubscriber m_IntakeSpeedSub;
   private double m_IntakeSpeed = defaultSpeed;
 
@@ -190,7 +190,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private double positionFromPositionType(ExtendIntakePositionType position) {
     switch (position) {
       case Extended:
-        return 36.5;
+        return 37.5;
       case JostleUp:
         return 26;
       case JostleDown:
