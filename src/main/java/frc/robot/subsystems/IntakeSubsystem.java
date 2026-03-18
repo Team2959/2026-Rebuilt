@@ -48,19 +48,19 @@ public class IntakeSubsystem extends SubsystemBase {
   private double m_IntakeSpeed = defaultSpeed;
 
   // power and current limiting
-  private static final int kExtendCurrentLimitAmps = 20;
+  private static final int kExtendCurrentLimitAmps = 30;
   // following Rev's arm kS and kG voltage measurements for feed forward
   // https://docs.revrobotics.com/revlib/spark/closed-loop/feed-forward-control
-  // V1 = 0.45; V2 = 0.15
+  // V1 = 0.35; V2 = 0.12
   // kS = (V1 - V2)/2.0
   // kCosG = V2 + kS
-  private static final double kStatic = 0.15;
-  private static final double kCosG = 0.3;
-  private static final double kCosRatio = 29.97; // motor 9:1 * gears = 29.97
+  private static final double kStatic = 0.115;
+  private static final double kCosG = 0.235;
+  private static final double kCosRatio = 3 * 29.97; // motor 3:1 * 9:1 * gears = 29.97
   // kP was 0.15 in initial testing
-  private static final PidValuesRecord retactPidValues = new PidValuesRecord(0.2, 0.0, 0);
+  private static final PidValuesRecord retactPidValues = new PidValuesRecord(0.05, 0.0, 0);
   // kSlot1 for extending with more power, separate tuning
-  private static final PidValuesRecord extendPidValues = new PidValuesRecord(0.15, 0.0, 0);
+  private static final PidValuesRecord extendPidValues = new PidValuesRecord(0.05, 0.0, 0);
   private static final double kExtendMaxOutput = 1.0;
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Intake Extend",
@@ -85,6 +85,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     m_extendConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .allowedClosedLoopError(0.1, ClosedLoopSlot.kSlot0)
+        .allowedClosedLoopError(0.1, ClosedLoopSlot.kSlot1)
         .pid(retactPidValues.kP(), retactPidValues.kI(), retactPidValues.kD())
         .pid(extendPidValues.kP(), extendPidValues.kI(), extendPidValues.kD(), ClosedLoopSlot.kSlot1)
         .outputRange(-kExtendMaxOutput, kExtendMaxOutput);
@@ -188,11 +190,11 @@ public class IntakeSubsystem extends SubsystemBase {
   private double positionFromPositionType(ExtendIntakePositionType position) {
     switch (position) {
       case Extended:
-        return 13.75;
+        return 36.5;
       case JostleUp:
-        return 8;
+        return 26;
       case JostleDown:
-        return 11;
+        return 32;
       default:
         return 0;
     }

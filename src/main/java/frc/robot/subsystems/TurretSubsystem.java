@@ -16,6 +16,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -95,6 +96,7 @@ public class TurretSubsystem extends SubsystemBase {
         .velocityConversionFactor(kPositionConversionFactor / 60.0);
     m_turretConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .allowedClosedLoopError(0.5, ClosedLoopSlot.kSlot0)
         .pid(pidValues.kP(), pidValues.kI(), pidValues.kD());
     m_turretConfig.closedLoop.feedForward.kS(kStatic);// .kV(0.025).kA(0.025);
     // m_turretConfig.closedLoop.maxMotion.cruiseVelocity(120).maxAcceleration(75).allowedProfileError(3);
