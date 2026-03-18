@@ -32,7 +32,7 @@ public class HopperSubsystem extends SubsystemBase {
   public HopperSubsystem() {
     SparkMaxConfig config = new SparkMaxConfig();
     config.idleMode(IdleMode.kCoast)
-        .inverted(true);
+        .inverted(false);
 
     m_HopperMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 

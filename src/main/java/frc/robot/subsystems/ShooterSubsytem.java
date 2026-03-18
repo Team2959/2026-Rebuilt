@@ -65,7 +65,7 @@ public class ShooterSubsytem extends SubsystemBase {
     m_shooterWheel.getConfigurator().apply(new ClosedLoopRampsConfigs().withVoltageClosedLoopRampPeriod(0.100));
     m_shooterWheel.setNeutralMode(NeutralModeValue.Coast);
     MotorOutputConfigs motorConfigs = new MotorOutputConfigs();
-    motorConfigs.withInverted(InvertedValue.Clockwise_Positive);
+    motorConfigs.withInverted(InvertedValue.CounterClockwise_Positive);
     m_shooterWheel.getConfigurator().apply(motorConfigs);
 
     m_shooterFollowerWheel.setNeutralMode(NeutralModeValue.Coast);

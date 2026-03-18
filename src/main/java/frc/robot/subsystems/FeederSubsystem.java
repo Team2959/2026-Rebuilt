@@ -35,7 +35,7 @@ public class FeederSubsystem extends SubsystemBase {
     config.idleMode(IdleMode.kCoast);
     m_FeederMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     var hopperConfig = new SparkMaxConfig();
-    hopperConfig.follow(m_FeederMotor)
+    hopperConfig.follow(m_FeederMotor, true)
         .idleMode(IdleMode.kCoast);
     m_HopperWallFeeder.configure(hopperConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
