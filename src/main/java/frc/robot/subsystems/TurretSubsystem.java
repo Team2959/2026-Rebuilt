@@ -52,6 +52,7 @@ public class TurretSubsystem extends SubsystemBase {
   private final double kTurretCrossoverBand = 45;
   private double m_requestedAngle = 0;
   private boolean m_suspendAutoTurret = false;
+  private double m_goToMaxOppositeAngle = Double.NaN;
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
   private final DoublePublisher m_correctedTargetPub;
@@ -133,15 +134,26 @@ public class TurretSubsystem extends SubsystemBase {
 
     var currentAngle = currentAngle();
 
+    // keep feeding the swing to the opposite side
+    if (!Double.isNaN(m_goToMaxOppositeAngle)) {
+      if (Math.abs(targetAngle - currentAngle) < 5.0) {
+        m_goToMaxOppositeAngle = Double.NaN;
+      } else {
+        targetAngle = m_goToMaxOppositeAngle;
+      }
+    }
+
     if (Math.abs(targetAngle - currentAngle) < 1.0)
       return;
 
     if (targetAngle > kMaxTurretAngle + kTurretCrossoverBand && (yawRate > 0)) {
       targetAngle = -kMaxTurretAngle;
+      m_goToMaxOppositeAngle = targetAngle;
     }
 
     if (targetAngle < -kMaxTurretAngle - kTurretCrossoverBand && (yawRate < 0)) {
       targetAngle = kMaxTurretAngle;
+      m_goToMaxOppositeAngle = targetAngle;
     }
 
     if (targetAngle < kMinTurretAngle || targetAngle > kMaxTurretAngle)
