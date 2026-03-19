@@ -48,7 +48,7 @@ public class TurretSubsystem extends SubsystemBase {
 
   private final double kMaxTurretAngle = 110;
   private final double kMinTurretAngle = -115;
-  private final double kDegreeLimiter = 20.0;
+  private final double kDegreeLimiter = 30.0;
   private final double kTurretCrossoverBand = 45;
   private double m_requestedAngle = 0;
   private boolean m_suspendAutoTurret = false;
