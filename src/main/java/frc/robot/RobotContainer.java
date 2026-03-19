@@ -18,7 +18,6 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsytem;
 import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
 import frc.robot.subsystems.TurretSubsystem;
-import frc.robot.subsystems.IntakeSubsystem.ExtendIntakePositionType;
 import frc.robot.vision.AprilTagShooterHelpers;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -136,11 +135,11 @@ public class RobotContainer {
     m_buttonBox.button(RobotMap.kFire).onTrue(startShootingCommand());
     m_buttonBox.button(RobotMap.kStopFire).onTrue(stopShootingCommand());
 
-    // new Trigger(() -> {
-    // return m_ShooterSubsytem.getShooterState() == ShooterStateType.Shooting;
-    // })
-    // .whileTrue(new WaitCommand(3).andThen(new
-    // IntakeJostleWhileShootingCommand(m_intakeSubsystem)));
+    new Trigger(() -> {
+      return m_ShooterSubsytem.getShooterState() == ShooterStateType.Shooting;
+    })
+        .whileTrue(new WaitCommand(3)
+        .andThen(new IntakeJostleWhileShootingCommand(m_intakeSubsystem)));
   }
 
   public double getDriveXInput() {

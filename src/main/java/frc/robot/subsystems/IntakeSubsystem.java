@@ -58,9 +58,9 @@ public class IntakeSubsystem extends SubsystemBase {
   private static final double kCosG = 0.235;
   private static final double kCosRatio = 3 * 29.97; // motor 3:1 * 9:1 * gears = 29.97
   // kP was 0.15 in initial testing
-  private static final PidValuesRecord retactPidValues = new PidValuesRecord(0.05, 0.0, 0);
+  private static final PidValuesRecord retactPidValues = new PidValuesRecord(0.07, 0.0, 0);
   // kSlot1 for extending with more power, separate tuning
-  private static final PidValuesRecord extendPidValues = new PidValuesRecord(0.05, 0.0, 0);
+  private static final PidValuesRecord extendPidValues = new PidValuesRecord(0.07, 0.0, 0);
   private static final double kExtendMaxOutput = 1.0;
 
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Intake Extend",
@@ -192,9 +192,9 @@ public class IntakeSubsystem extends SubsystemBase {
       case Extended:
         return 37.5;
       case JostleUp:
-        return 26;
+        return 20;
       case JostleDown:
-        return 32;
+        return 34;
       default:
         return 0;
     }
