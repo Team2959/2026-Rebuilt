@@ -15,8 +15,8 @@ public class IntakeJostleWhileShootingCommand extends Command {
 
   /** Creates a new IntakeJostleWhileShootingCommand. */
   public IntakeJostleWhileShootingCommand(IntakeSubsystem intakeSubsystem) {
-    addRequirements(m_intakeSubsystem);
     m_intakeSubsystem = intakeSubsystem;
+    addRequirements(intakeSubsystem);
   }
 
   // Called when the command is initially scheduled.
