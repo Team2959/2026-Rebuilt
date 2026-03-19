@@ -7,12 +7,10 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.networktables.DoubleSubscriber;
@@ -33,7 +31,6 @@ public class ShooterSubsytem extends SubsystemBase {
   }
 
   private TalonFX m_shooterWheel = new TalonFX(RobotMap.kShooterPrimaryWheelkraken);
-  private TalonFX m_shooterFollowerWheel = new TalonFX(RobotMap.kShooterPrimaryWheelkraken);
   private Slot0Configs m_slot0Configs = new Slot0Configs();
   private VelocityVoltage m_velocityVoltage;
   private final PidValuesRecord pidValues = new PidValuesRecord(1.0, 0.0, 0);
@@ -68,9 +65,6 @@ public class ShooterSubsytem extends SubsystemBase {
     motorConfigs.withInverted(InvertedValue.CounterClockwise_Positive);
     m_shooterWheel.getConfigurator().apply(motorConfigs);
 
-    m_shooterFollowerWheel.setNeutralMode(NeutralModeValue.Coast);
-    m_shooterFollowerWheel.setControl(new Follower(RobotMap.kShooterPrimaryWheelkraken, MotorAlignmentValue.Opposed));
-
     stopShooter();
 
     var topic = m_networkTable.networkTable().getDoubleTopic("Fixed Speed");
@@ -85,9 +79,10 @@ public class ShooterSubsytem extends SubsystemBase {
     if (RobotContainer.m_ticks % 15 != 11)
       return;
 
-    // m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) ->
-    // setVelocity(t), (b) -> {
-    // });
+    m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) ->
+    setVelocity(t), (b) -> {
+    });
+
     m_fixedSpeed = m_fixedSpeedSub.get();
   }
 
@@ -139,19 +134,27 @@ public class ShooterSubsytem extends SubsystemBase {
     var lowerSpeed = 41.5;
     var upperSpeed = 46.0;
     var lowerDistance = 2.0;
-    if (distance >= 4) {
-      return Math.max(105, 65 + (distance - 4) * 20);
+    if (distance >= 5) {
+      return Math.max(105, 66 + (distance - 5) * 20);
+    } else if (distance >= 4.5) {
+      upperSpeed = 66;
+      lowerSpeed = 63;
+      lowerDistance = 3.5;
+    } else if (distance >= 4) {
+      upperSpeed = 63;
+      lowerSpeed = 59.5;
+      lowerDistance = 3.5;
     } else if (distance >= 3.5) {
-      upperSpeed = 65;
-      lowerSpeed = 55;
+      upperSpeed = 59.5;
+      lowerSpeed = 56;
       lowerDistance = 3.5;
     } else if (distance >= 3) {
-      lowerSpeed = 47;
-      upperSpeed = 55;
+      lowerSpeed = 52;
+      upperSpeed = 56;
       lowerDistance = 3;
     } else if (distance >= 2.5) {
       lowerSpeed = 46;
-      upperSpeed = 47;
+      upperSpeed = 52;
       lowerDistance = 2.5;
     }
 
