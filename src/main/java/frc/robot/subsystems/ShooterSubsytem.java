@@ -79,9 +79,9 @@ public class ShooterSubsytem extends SubsystemBase {
     if (RobotContainer.m_ticks % 15 != 11)
       return;
 
-    m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) ->
-    setVelocity(t), (b) -> {
-    });
+    // m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) ->
+    // setVelocity(t), (b) -> {
+    // });
 
     m_fixedSpeed = m_fixedSpeedSub.get();
   }
