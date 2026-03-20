@@ -5,34 +5,27 @@
     "data": {
       "commands": [
         {
-          "type": "sequential",
+          "type": "named",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Extend Intake"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Rt Bump to Outpost"
-                }
-              }
-            ]
+            "name": "Shoot First 8"
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 2.0
+            "name": "Extend Intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Outpost to Rt TrenchShoot"
+            "pathName": "Lt Trench to Neutral Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Return to Lt Trench"
           }
         },
         {
@@ -44,13 +37,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Rt Trench Neutral Intake"
+            "pathName": "Lt Mid to Lt Trench"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Return to Rt Trench"
+            "pathName": "Lt Trench to Neutral Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Return to Lt Trench"
           }
         },
         {

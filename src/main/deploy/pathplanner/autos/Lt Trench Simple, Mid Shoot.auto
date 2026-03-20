@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Rt Trench to Mid"
+            "pathName": "Lt Trench to Mid"
           }
         },
         {
@@ -17,39 +17,33 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Rt Mid to Trench"
+            "name": "Extend Intake"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Rt Trench Neutral Intake"
+            "pathName": "Lt Mid to Lt Trench"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Return to Rt Trench"
+            "pathName": "Lt Trench to Neutral Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Return to Lt Trench"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Shoot Full Hopper"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Rt Mid to Trench"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Rt Trench Neutral Intake"
           }
         }
       ]

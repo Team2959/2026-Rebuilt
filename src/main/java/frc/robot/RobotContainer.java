@@ -200,7 +200,7 @@ public class RobotContainer {
     })
         .alongWith(m_hopperSubsystem.startHopperCommand()
             .alongWith(new InstantCommand(() -> {
-              m_shootingSpeedReduction = 0.75;
+              m_shootingSpeedReduction = 0.50;
             })
                 .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem))));
   }
@@ -227,7 +227,7 @@ public class RobotContainer {
   }
 
   private void createNamedCommandsForAutos() {
-    NamedCommands.registerCommand("Shoot First 8", startAndStopShooting(5));
+    NamedCommands.registerCommand("Shoot First 8", startAndStopShooting(3));
     NamedCommands.registerCommand("Shoot Full Hopper", startAndStopShooting(10));
     NamedCommands.registerCommand("Start Shooting", startShootingCommand());
     NamedCommands.registerCommand("Stop Shooting", stopShootingCommand());

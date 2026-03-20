@@ -148,12 +148,12 @@ public class TurretSubsystem extends SubsystemBase {
 
     if (targetAngle > kMaxTurretAngle + kTurretCrossoverBand && (yawRate > 0)) {
       targetAngle = -kMaxTurretAngle;
-      m_goToMaxOppositeAngle = targetAngle;
+      // m_goToMaxOppositeAngle = targetAngle;
     }
 
     if (targetAngle < -kMaxTurretAngle - kTurretCrossoverBand && (yawRate < 0)) {
       targetAngle = kMaxTurretAngle;
-      m_goToMaxOppositeAngle = targetAngle;
+      // m_goToMaxOppositeAngle = targetAngle;
     }
 
     if (targetAngle < kMinTurretAngle || targetAngle > kMaxTurretAngle)

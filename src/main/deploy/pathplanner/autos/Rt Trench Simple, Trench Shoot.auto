@@ -5,7 +5,13 @@
     "data": {
       "commands": [
         {
-          "type": "sequential",
+          "type": "named",
+          "data": {
+            "name": "Shoot First 8"
+          }
+        },
+        {
+          "type": "parallel",
           "data": {
             "commands": [
               {
@@ -15,30 +21,12 @@
                 }
               },
               {
-                "type": "path",
+                "type": "wait",
                 "data": {
-                  "pathName": "Rt Bump to Outpost"
+                  "waitTime": 2.0
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 2.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Outpost to Rt TrenchShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot Full Hopper"
           }
         },
         {

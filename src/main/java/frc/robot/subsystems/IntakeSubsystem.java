@@ -42,11 +42,9 @@ public class IntakeSubsystem extends SubsystemBase {
   private SparkRelativeEncoder m_extendEncoder;
   private SparkClosedLoopController m_extendController;
 
-  private static final double defaultSpeed = 0.8;
+  private static final double defaultSpeed = 1;
   private final DoubleSubscriber m_IntakeSpeedSub;
-  private double m_IntakeSpeed = defaultSpeed;
-
-  // power and current limiting
+  private double m_IntakeSpeed = defaultSpeed;  // power and current limiting
   private static final int kExtendCurrentLimitAmps = 30;
   // following Rev's arm kS and kG voltage measurements for feed forward
   // https://docs.revrobotics.com/revlib/spark/closed-loop/feed-forward-control

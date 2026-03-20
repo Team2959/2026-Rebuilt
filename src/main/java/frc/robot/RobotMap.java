@@ -43,8 +43,8 @@ public final class RobotMap {
     public static final int kButtonBox = 2;
 
     // Driver Buttons
-    public static final int kLeftLockWheels = 4;
     public static final int kRightResetNavXButton = 10;
+    public static final int kLeftLockWheels = 4;
     public static final int kLeftFixedShooterButton = 10;
 
     // Co-Pilot Button board

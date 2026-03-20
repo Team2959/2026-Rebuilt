@@ -5,40 +5,27 @@
     "data": {
       "commands": [
         {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Extend Intake"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Rt Bump to Outpost"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 2.0
-          }
-        },
-        {
           "type": "path",
           "data": {
-            "pathName": "Outpost to Rt TrenchShoot"
+            "pathName": "Rt Trench to Mid"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Shoot Full Hopper"
+            "name": "Shoot First 8"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Extend Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Rt Mid to Trench"
           }
         },
         {
