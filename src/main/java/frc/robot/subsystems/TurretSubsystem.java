@@ -10,10 +10,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkBase.ControlType;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
-import static edu.wpi.first.units.Units.Volts;
-
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
@@ -22,13 +18,7 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.units.measure.MutAngle;
-import edu.wpi.first.units.measure.MutAngularVelocity;
-import edu.wpi.first.units.measure.MutVoltage;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.robotarians.NeoPidNetworkTableHelper;
@@ -57,33 +47,33 @@ public class TurretSubsystem extends SubsystemBase {
   private final NeoPidNetworkTableHelper m_networkTable = new NeoPidNetworkTableHelper("Turret", pidValues);
   private final DoublePublisher m_correctedTargetPub;
 
-  private final MutVoltage m_appliedVoltage = Volts.mutable(0);
-  private final MutAngle m_angle = Degrees.mutable(0);
-  private final MutAngularVelocity m_velocity = DegreesPerSecond.mutable(0);
+  // private final MutVoltage m_appliedVoltage = Volts.mutable(0);
+  // private final MutAngle m_angle = Degrees.mutable(0);
+  // private final MutAngularVelocity m_velocity = DegreesPerSecond.mutable(0);
   // Create a new SysId routine for characterizing the shooter.
-  private final SysIdRoutine m_sysIdRoutine = new SysIdRoutine(
-      // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
-      new SysIdRoutine.Config(),
-      new SysIdRoutine.Mechanism(
-          // Tell SysId how to plumb the driving voltage to the motor(s).
-          m_turretMotor::setVoltage,
-          // Tell SysId how to record a frame of data for each motor on the mechanism
-          // being
-          // characterized.
-          log -> {
-            // Record a frame for the shooter motor.
-            log.motor("shooter-wheel")
-                .voltage(
-                    m_appliedVoltage.mut_replace(
-                        m_turretMotor.get() * RobotController.getBatteryVoltage(), Volts))
-                .angularPosition(m_angle.mut_replace(m_turretEncoder.getPosition(), Degrees))
-                .angularVelocity(
-                    m_velocity.mut_replace(m_turretEncoder.getVelocity(), DegreesPerSecond));
-          },
-          // Tell SysId to make generated commands require this subsystem, suffix test
-          // state in
-          // WPILog with this subsystem's name ("shooter")
-          this));
+  // private final SysIdRoutine m_sysIdRoutine = new SysIdRoutine(
+  //     // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
+  //     new SysIdRoutine.Config(),
+  //     new SysIdRoutine.Mechanism(
+  //         // Tell SysId how to plumb the driving voltage to the motor(s).
+  //         m_turretMotor::setVoltage,
+  //         // Tell SysId how to record a frame of data for each motor on the mechanism
+  //         // being
+  //         // characterized.
+  //         log -> {
+  //           // Record a frame for the shooter motor.
+  //           log.motor("shooter-wheel")
+  //               .voltage(
+  //                   m_appliedVoltage.mut_replace(
+  //                       m_turretMotor.get() * RobotController.getBatteryVoltage(), Volts))
+  //               .angularPosition(m_angle.mut_replace(m_turretEncoder.getPosition(), Degrees))
+  //               .angularVelocity(
+  //                   m_velocity.mut_replace(m_turretEncoder.getVelocity(), DegreesPerSecond));
+  //         },
+  //         // Tell SysId to make generated commands require this subsystem, suffix test
+  //         // state in
+  //         // WPILog with this subsystem's name ("shooter")
+  //         this));
 
   /** Creates a new TurretSubsystem. */
   public TurretSubsystem() {
@@ -214,11 +204,11 @@ public class TurretSubsystem extends SubsystemBase {
       setAngleSetpoint(0);
   }
 
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return m_sysIdRoutine.quasistatic(direction);
-  }
+  // public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+  //   return m_sysIdRoutine.quasistatic(direction);
+  // }
 
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return m_sysIdRoutine.dynamic(direction);
-  }
+  // public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+  //   return m_sysIdRoutine.dynamic(direction);
+  // }
 }
