@@ -45,6 +45,7 @@ public final class RobotMap {
     // Driver Buttons
     public static final int kLeftLockWheels = 4;
     public static final int kRightResetNavXButton = 10;
+    public static final int kLeftFixedShooterButton = 10;
 
     // Co-Pilot Button board
     public static final int kFire = 5;
@@ -58,7 +59,7 @@ public final class RobotMap {
     public static final int kFeedShooter = 8;
     public static final int kReverseFeeder = 4; 
     public static final int kSuspendAutoTurret = 9;
-    public static final int kFixedShooterSpeed = 2;
+    public static final int kIntakeJostleUp = 2;
 
     // Zeroed values, should be in radians
     // source is google document in Electrical for team - module data

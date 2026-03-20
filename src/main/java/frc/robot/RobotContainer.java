@@ -5,7 +5,6 @@
 package frc.robot;
 
 import frc.robot.commands.AutoFeedShooterCommand;
-import frc.robot.commands.IntakeJostleWhileShootingCommand;
 import frc.robot.commands.ShooterVelocityfromDistanceCommand;
 import frc.robot.commands.TeleOpDriveCommand;
 import frc.robot.commands.TurretAutoTargetCommand;
@@ -16,7 +15,6 @@ import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.HopperSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsytem;
-import frc.robot.subsystems.ShooterSubsytem.ShooterStateType;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.vision.AprilTagShooterHelpers;
 
@@ -34,7 +32,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
@@ -110,6 +107,9 @@ public class RobotContainer {
           m_driveSubsystem.resetNavX();
         }, m_driveSubsystem));
     m_leftJoystick.button(RobotMap.kLeftLockWheels).whileTrue(m_driveSubsystem.lockWheelsCommand());
+    m_leftJoystick.button(RobotMap.kLeftFixedShooterButton).toggleOnTrue(new StartEndCommand(
+        () -> m_ShooterSubsytem.setFixedShooterSpeed(true),
+        () -> m_ShooterSubsytem.setFixedShooterSpeed(false)));
 
     // m_rightJoystick.button(1).whileTrue(m_turretSubsystem.sysIdQuasistatic(Direction.kForward));
     // m_leftJoystick.button(1).whileTrue(m_turretSubsystem.sysIdQuasistatic(Direction.kReverse));
@@ -118,6 +118,7 @@ public class RobotContainer {
 
     m_buttonBox.button(RobotMap.kExtendIntake).onTrue(extendIntakeCommand());
     m_buttonBox.button(RobotMap.kRetractIntake).onTrue(m_intakeSubsystem.retractIntakeCommand());
+    m_buttonBox.button(RobotMap.kIntakeJostleUp).onTrue(jostleUpIntakeCommand());
     m_buttonBox.button(RobotMap.kToggleIntake).toggleOnTrue(m_intakeSubsystem.toggleIntakeCommand());
     m_buttonBox.button(RobotMap.kReverseIntake).whileTrue(m_intakeSubsystem.reverseIntakeCommand());
     m_buttonBox.button(RobotMap.kToggleHopper).toggleOnTrue(m_hopperSubsystem.toggleHopperCommand());
@@ -129,17 +130,9 @@ public class RobotContainer {
     m_buttonBox.button(RobotMap.kSuspendAutoTurret).toggleOnTrue(new StartEndCommand(
         () -> m_turretSubsystem.setSuspendAutoTurret(true),
         () -> m_turretSubsystem.setSuspendAutoTurret(false)));
-    m_buttonBox.button(RobotMap.kFixedShooterSpeed).onTrue(new InstantCommand(
-        () -> m_ShooterSubsytem.setFixedShooterSpeed(true)));
 
     m_buttonBox.button(RobotMap.kFire).onTrue(startShootingCommand());
     m_buttonBox.button(RobotMap.kStopFire).onTrue(stopShootingCommand());
-
-    new Trigger(() -> {
-      return m_ShooterSubsytem.getShooterState() == ShooterStateType.Shooting;
-    })
-        .whileTrue(new WaitCommand(3)
-        .andThen(new IntakeJostleWhileShootingCommand(m_intakeSubsystem)));
   }
 
   public double getDriveXInput() {
@@ -222,6 +215,10 @@ public class RobotContainer {
 
   private Command extendIntakeCommand() {
     return m_intakeSubsystem.extendIntakeCommand();
+  }
+
+  private Command jostleUpIntakeCommand() {
+    return m_intakeSubsystem.jostleUpIntakeCommand();
   }
 
   private Command startAndStopShooting(double durationInSeconds) {

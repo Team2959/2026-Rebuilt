@@ -33,8 +33,7 @@ public class IntakeSubsystem extends SubsystemBase {
   public enum ExtendIntakePositionType {
     Retracted,
     Extended,
-    JostleUp,
-    JostleDown
+    JostleUp
   }
 
   private SparkMax m_intakeMotor = new SparkMax(RobotMap.kIntakeMotorSparkMax, MotorType.kBrushless);
@@ -170,6 +169,12 @@ public class IntakeSubsystem extends SubsystemBase {
     }, this);
   }
 
+  public Command jostleUpIntakeCommand() {
+    return new InstantCommand(() -> {
+      setExtendPosition(ExtendIntakePositionType.JostleUp);
+    }, this);
+  }
+
   public Command retractIntakeCommand() {
     return new InstantCommand(() -> {
       setExtendPosition(ExtendIntakePositionType.Retracted);
@@ -193,8 +198,6 @@ public class IntakeSubsystem extends SubsystemBase {
         return 37.5;
       case JostleUp:
         return 20;
-      case JostleDown:
-        return 34;
       default:
         return 0;
     }
