@@ -115,6 +115,16 @@ public class TurretSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
 
+    // keep feeding the swing to the opposite side
+    if (!Double.isNaN(m_goToMaxOppositeAngle)) {
+      var currentAngle = currentAngle();
+      if (Math.abs(m_goToMaxOppositeAngle - currentAngle) < 5.0) {
+        m_goToMaxOppositeAngle = Double.NaN;
+      } else {
+        setAngleSetpoint(DegreeLimitTargetAngle(m_goToMaxOppositeAngle, currentAngle));
+      }
+    }
+
     if (RobotContainer.m_ticks % 15 != 5)
       return;
 
@@ -129,42 +139,44 @@ public class TurretSubsystem extends SubsystemBase {
     m_turretMotor.set(0);
   }
 
-  public void goToTargetAngle(double targetAngle, double yawRate) {
-    targetAngle = m_requestedAngle = keepAngleInOneEightySpace(targetAngle);
-
-    var currentAngle = currentAngle();
-
-    // keep feeding the swing to the opposite side
-    if (!Double.isNaN(m_goToMaxOppositeAngle)) {
-      if (Math.abs(targetAngle - currentAngle) < 5.0) {
-        m_goToMaxOppositeAngle = Double.NaN;
-      } else {
-        targetAngle = m_goToMaxOppositeAngle;
-      }
-    }
-
-    if (Math.abs(targetAngle - currentAngle) < 1.0)
-      return;
-
-    if (targetAngle > kMaxTurretAngle + kTurretCrossoverBand && (yawRate > 0)) {
-      targetAngle = -kMaxTurretAngle;
-      // m_goToMaxOppositeAngle = targetAngle;
-    }
-
-    if (targetAngle < -kMaxTurretAngle - kTurretCrossoverBand && (yawRate < 0)) {
-      targetAngle = kMaxTurretAngle;
-      // m_goToMaxOppositeAngle = targetAngle;
-    }
-
-    if (targetAngle < kMinTurretAngle || targetAngle > kMaxTurretAngle)
-      return;
-
+  private double DegreeLimitTargetAngle(double targetAngle, double currentAngle) {
     if (Math.abs(targetAngle - currentAngle) > kDegreeLimiter) {
       if (targetAngle > currentAngle)
         targetAngle = currentAngle + kDegreeLimiter;
       else
         targetAngle = currentAngle - kDegreeLimiter;
     }
+    return targetAngle;
+  }
+
+  public void goToTargetAngle(double targetAngle, double yawRate) {
+    if (!Double.isNaN(m_goToMaxOppositeAngle)) {
+      // keep feeding the swing to the opposite side
+      // done in periodic()
+      return;
+    }
+
+    targetAngle = m_requestedAngle = keepAngleInOneEightySpace(targetAngle);
+
+    var currentAngle = currentAngle();
+
+    if (Math.abs(targetAngle - currentAngle) < 1.0)
+      return;
+
+    if (targetAngle > kMaxTurretAngle + kTurretCrossoverBand && (yawRate > 0)) {
+      targetAngle = -kMaxTurretAngle + 10;
+      // m_goToMaxOppositeAngle = targetAngle;
+    }
+
+    if (targetAngle < -kMaxTurretAngle - kTurretCrossoverBand && (yawRate < 0)) {
+      targetAngle = kMaxTurretAngle - 10;
+      // m_goToMaxOppositeAngle = targetAngle;
+    }
+
+    if (targetAngle < kMinTurretAngle || targetAngle > kMaxTurretAngle)
+      return;
+
+    targetAngle = DegreeLimitTargetAngle(targetAngle, currentAngle);
 
     setAngleSetpoint(targetAngle);
   }
