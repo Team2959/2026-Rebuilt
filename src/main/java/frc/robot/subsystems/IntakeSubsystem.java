@@ -112,10 +112,10 @@ public class IntakeSubsystem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
 
-    if (RobotContainer.m_ticks % 15 != 3)
-      return;
+    // if (RobotContainer.m_ticks % 15 != 3)
+    //   return;
 
-    dashboardUpdate();
+    // dashboardUpdate();
   }
 
   private void dashboardUpdate() {
