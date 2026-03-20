@@ -45,8 +45,10 @@ public class ShooterSubsytem extends SubsystemBase {
   private ShooterStateType m_ShooterState = ShooterStateType.Off;
   private double m_requestedVelocity;
 
+  private final double kIdleSpeed = 5.0;
+  private final double k2MeterSpeed = 41.5;
   private boolean m_fixedShooterSpeed;
-  private double m_fixedSpeed = 5.0;
+  private double m_fixedSpeed = k2MeterSpeed;
 
   /** Creates a new Shootersubsytem. */
   public ShooterSubsytem() {
@@ -107,7 +109,7 @@ public class ShooterSubsytem extends SubsystemBase {
   }
 
   public void shooterToIdle() {
-    setVelocity(m_fixedSpeed);
+    setVelocity(getFixedShooterSpeed() ? getFixedSpeed() : kIdleSpeed);
     setShooterState(ShooterStateType.Idle);
   }
 
@@ -130,8 +132,8 @@ public class ShooterSubsytem extends SubsystemBase {
 
   private double velocityFromDistance(double distance) {
     if (distance <= 2)
-      return 41.5;
-    var lowerSpeed = 41.5;
+      return k2MeterSpeed;
+    var lowerSpeed = k2MeterSpeed;
     var upperSpeed = 46.0;
     var lowerDistance = 2.0;
     if (distance >= 5) {

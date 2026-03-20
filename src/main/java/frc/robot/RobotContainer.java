@@ -172,6 +172,8 @@ public class RobotContainer {
     m_targetTurretAngle = AprilTagShooterHelpers.mt2TargetAngle(mt2, m_ShooterSubsytem.isShooting());
     m_targetDistance = AprilTagShooterHelpers.mt2DistanceToTaget(mt2, m_ShooterSubsytem.isShooting());
 
+    m_atDistancePub.set(Math.abs(m_targetDistance - 2.0) < 0.2);
+
     m_ticks++;
 
     if (m_ticks % 15 != 1)
@@ -179,7 +181,6 @@ public class RobotContainer {
 
     m_mt2TargetAnglePub.set(m_targetTurretAngle);
     m_mt2TargetDistancePub.set(m_targetDistance);
-    m_atDistancePub.set(Math.abs(m_targetDistance - 2.0) < 0.2);
   }
 
   public void autoInit() {
