@@ -45,7 +45,7 @@ public class ShooterSubsytem extends SubsystemBase {
   private ShooterStateType m_ShooterState = ShooterStateType.Off;
   private double m_requestedVelocity;
 
-  private final double kIdleSpeed = 5.0;
+  private final double kIdleSpeed = 10.0;
   private final double k2MeterSpeed = 41.5;
   private boolean m_fixedShooterSpeed;
   private double m_fixedSpeed = k2MeterSpeed;
