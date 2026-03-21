@@ -26,7 +26,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 3.0
           }
         },
         {
@@ -36,9 +36,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "Shoot Full Hopper"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot Full Hopper"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Jostle Up Intake"
+                }
+              }
+            ]
           }
         },
         {
@@ -54,9 +67,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "Shoot Full Hopper"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot Full Hopper"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Jostle Up Intake"
+                }
+              }
+            ]
           }
         }
       ]

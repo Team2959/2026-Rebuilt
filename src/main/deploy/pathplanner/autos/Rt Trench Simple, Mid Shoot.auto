@@ -41,9 +41,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "Shoot Full Hopper"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot Full Hopper"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Jostle Up Intake"
+                }
+              }
+            ]
           }
         }
       ]

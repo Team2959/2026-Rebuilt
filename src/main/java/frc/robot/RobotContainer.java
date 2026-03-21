@@ -233,6 +233,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("Start Shooting", startShootingCommand());
     NamedCommands.registerCommand("Stop Shooting", stopShootingCommand());
     NamedCommands.registerCommand("Extend Intake", extendIntakeCommand());
+    NamedCommands.registerCommand("Jostle Up Intake", jostleUpIntakeCommand());
     NamedCommands.registerCommand("Turret to Pos 60", new TurretToAngleCommand(m_turretSubsystem, 60));
     NamedCommands.registerCommand("Turret to Neg 60", new TurretToAngleCommand(m_turretSubsystem, -60));
   }
