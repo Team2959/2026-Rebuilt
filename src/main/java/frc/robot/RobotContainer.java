@@ -24,6 +24,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -61,6 +62,7 @@ public class RobotContainer {
   private final DoublePublisher m_mt2TargetAnglePub;
   private final DoublePublisher m_mt2TargetDistancePub;
   private final BooleanPublisher m_atDistancePub;
+  private final DoublePublisher m_mtCount;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -82,6 +84,8 @@ public class RobotContainer {
     m_mt2TargetDistancePub = topic.publish();
     topic = datatable.getDoubleTopic("MT2 Angle");
     m_mt2TargetAnglePub = topic.publish();
+    topic = datatable.getDoubleTopic("MT2 Count");
+    m_mtCount = topic.publish();
     var topic2 = datatable.getBooleanTopic("Is At Distance");
     m_atDistancePub = topic2.publish();
 
@@ -179,6 +183,7 @@ public class RobotContainer {
     if (m_ticks % 15 != 1)
       return;
 
+    m_mtCount.set(mt2.tagCount);
     m_mt2TargetAnglePub.set(m_targetTurretAngle);
     m_mt2TargetDistancePub.set(m_targetDistance);
   }
