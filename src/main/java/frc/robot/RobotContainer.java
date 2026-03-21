@@ -114,6 +114,7 @@ public class RobotContainer {
     m_leftJoystick.button(RobotMap.kLeftFixedShooterButton).toggleOnTrue(new StartEndCommand(
         () -> m_ShooterSubsytem.setFixedShooterSpeed(true),
         () -> m_ShooterSubsytem.setFixedShooterSpeed(false)));
+    m_buttonBox.button(RobotMap.kLeftReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
 
     // m_rightJoystick.button(1).whileTrue(m_turretSubsystem.sysIdQuasistatic(Direction.kForward));
     // m_leftJoystick.button(1).whileTrue(m_turretSubsystem.sysIdQuasistatic(Direction.kReverse));
@@ -126,7 +127,6 @@ public class RobotContainer {
     m_buttonBox.button(RobotMap.kToggleIntake).toggleOnTrue(m_intakeSubsystem.toggleIntakeCommand());
     m_buttonBox.button(RobotMap.kReverseIntake).whileTrue(m_intakeSubsystem.reverseIntakeCommand());
     m_buttonBox.button(RobotMap.kToggleHopper).toggleOnTrue(m_hopperSubsystem.toggleHopperCommand());
-    m_buttonBox.button(RobotMap.kReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
     m_buttonBox.button(RobotMap.kFeedShooter).whileTrue(
         new StartEndCommand(() -> m_FeederSubsystem.startFeeder(), () -> m_FeederSubsystem.stopFeeder(),
             m_FeederSubsystem));
@@ -136,6 +136,7 @@ public class RobotContainer {
         () -> m_turretSubsystem.setSuspendAutoTurret(false)));
 
     m_buttonBox.button(RobotMap.kFire).onTrue(startShootingCommand());
+    m_buttonBox.button(RobotMap.kPassing).onTrue(startPassingCommand());
     m_buttonBox.button(RobotMap.kStopFire).onTrue(stopShootingCommand());
   }
 
@@ -203,6 +204,17 @@ public class RobotContainer {
   private Command startShootingCommand() {
     return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem, () -> {
       return m_targetDistance;
+    })
+        .alongWith(m_hopperSubsystem.startHopperCommand()
+            .alongWith(new InstantCommand(() -> {
+              m_shootingSpeedReduction = 0.50;
+            })
+                .andThen(new AutoFeedShooterCommand(m_FeederSubsystem, m_ShooterSubsytem, m_turretSubsystem))));
+  }
+
+  private Command startPassingCommand() {
+    return new ShooterVelocityfromDistanceCommand(m_ShooterSubsytem, () -> {
+      return Math.min(m_targetDistance, 59.5);
     })
         .alongWith(m_hopperSubsystem.startHopperCommand()
             .alongWith(new InstantCommand(() -> {

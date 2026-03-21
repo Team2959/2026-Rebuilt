@@ -46,6 +46,7 @@ public final class RobotMap {
     public static final int kRightResetNavXButton = 10;
     public static final int kLeftLockWheels = 4;
     public static final int kLeftFixedShooterButton = 10;
+    public static final int kLeftReverseHopper = 8;
 
     // Co-Pilot Button board
     public static final int kFire = 5;
@@ -55,7 +56,7 @@ public final class RobotMap {
     public static final int kToggleIntake = 12;
     public static final int kReverseIntake = 1;
     public static final int kToggleHopper = 11;
-    public static final int kReverseHopper = 6;
+    public static final int kPassing = 6;
     public static final int kFeedShooter = 8;
     public static final int kReverseFeeder = 4; 
     public static final int kSuspendAutoTurret = 9;
