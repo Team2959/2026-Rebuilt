@@ -193,7 +193,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private double positionFromPositionType(ExtendIntakePositionType position) {
     switch (position) {
       case Extended:
-        return 37.5;
+        return 45.5;
       case JostleUp:
         return 20;
       default:
