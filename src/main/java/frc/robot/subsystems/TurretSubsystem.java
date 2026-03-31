@@ -115,6 +115,9 @@ public class TurretSubsystem extends SubsystemBase {
       }
     }
 
+    if (m_suspendAutoTurret)
+      setAngleSetpoint(0);
+
     if (RobotContainer.m_ticks % 15 != 5)
       return;
 

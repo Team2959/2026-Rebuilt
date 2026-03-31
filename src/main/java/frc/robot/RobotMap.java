@@ -15,21 +15,22 @@ public final class RobotMap {
     public static final int kFrontRightModule = 3;
 
     // CAN motor addresses
-        // SparkMax
+    // SparkMax
     public static final int kIntakeMotorSparkMax = 31;
     public static final int KIntakeExtendMotorSparkMax = 32;
     public static final int kHopperMotorSparkMax = 33;
     public static final int kFeederMotorSparkMax = 34;
     public static final int kTurretMotorSparkMax = 35;
     public static final int kHopperWallFeeder = 36;
-        // Kraken
-    public static final int kShooterPrimaryWheelkraken = 22;
+    // Kraken
+    public static final int kShooterPrimaryWheelkraken = 21;
+    public static final int kShooterFollowerWheelkraken = 22;
     public static final int kExtendLeftMotorkraken = 25;
     public static final int kExtendRightMotorkraken = 26;
 
     // Analog Input addresses
-    public static final int kFrontLeftAnalogInput = 2; 
-    public static final int kBackLeftAnalogInput = 0;    // swerve module 4
+    public static final int kFrontLeftAnalogInput = 2;
+    public static final int kBackLeftAnalogInput = 0; // swerve module 4
     public static final int kBackRightAnalogInput = 1;
     public static final int kFrontRightAnalogInput = 3;
 
@@ -58,15 +59,15 @@ public final class RobotMap {
     public static final int kToggleHopper = 11;
     public static final int kPassing = 6;
     public static final int kFeedShooter = 8;
-    public static final int kReverseFeeder = 4; 
+    public static final int kReverseFeeder = 4;
     public static final int kSuspendAutoTurret = 9;
     public static final int kIntakeJostleUp = 2;
 
     // Zeroed values, should be in radians
     // source is google document in Electrical for team - module data
     public static final double kDegreesToRadians = Math.PI * 2.0 / 360.0;
-    public static final double kZeroedFrontLeft = 32.1  * kDegreesToRadians;    // for FL module 2
-    public static final double kZeroedFrontRight = 3.7 * kDegreesToRadians;   // for FR module 3
-    public static final double kZeroedBackLeft = 89.1 * kDegreesToRadians;     // for BL module 4
-    public static final double kZeroedBackRight = 50.4 * kDegreesToRadians;    // for BR module 1
+    public static final double kZeroedFrontLeft = 32.1 * kDegreesToRadians; // for FL module 2
+    public static final double kZeroedFrontRight = 309.0 * kDegreesToRadians; // for FR module 3
+    public static final double kZeroedBackLeft = 89.1 * kDegreesToRadians; // for BL module 4
+    public static final double kZeroedBackRight = 50.4 * kDegreesToRadians; // for BR module 1
 };

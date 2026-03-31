@@ -24,7 +24,6 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
-import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -46,7 +45,7 @@ public class RobotContainer {
   private final Conditioning m_driveXConditioning = new Conditioning();
   private final Conditioning m_driveYConditioning = new Conditioning();
   private final Conditioning m_turnConditioning = new Conditioning();
-  private double m_speedMultiplier = 0.85;
+  private double m_speedMultiplier = 0.95;
   private double m_shootingSpeedReduction = 1.0;
 
   private final CommandJoystick m_leftJoystick = new CommandJoystick(RobotMap.kLeftJoystick);
@@ -62,7 +61,11 @@ public class RobotContainer {
   private final DoublePublisher m_mt2TargetAnglePub;
   private final DoublePublisher m_mt2TargetDistancePub;
   private final BooleanPublisher m_atDistancePub;
-  private final DoublePublisher m_mtCount;
+  private final DoublePublisher m_mtCountPub;
+  private final DoublePublisher m_poseXPub;
+  private final DoublePublisher m_poseYPub;
+  private final BooleanPublisher m_fixedSpeedOub;
+  private final BooleanPublisher m_autoTurretPub;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -85,9 +88,17 @@ public class RobotContainer {
     topic = datatable.getDoubleTopic("MT2 Angle");
     m_mt2TargetAnglePub = topic.publish();
     topic = datatable.getDoubleTopic("MT2 Count");
-    m_mtCount = topic.publish();
+    m_mtCountPub = topic.publish();
+    topic = datatable.getDoubleTopic("Pose X");
+    m_poseXPub = topic.publish();
+    topic = datatable.getDoubleTopic("Pose Y");
+    m_poseYPub = topic.publish();
     var topic2 = datatable.getBooleanTopic("Is At Distance");
     m_atDistancePub = topic2.publish();
+    topic2 = datatable.getBooleanTopic("Fixed Turret on");
+    m_autoTurretPub = topic2.publish();
+    topic2 = datatable.getBooleanTopic("Fixed Speed on");
+    m_fixedSpeedOub = topic2.publish();
 
     // Configure the trigger bindings
     configureBindings();
@@ -112,9 +123,16 @@ public class RobotContainer {
         }, m_driveSubsystem));
     m_leftJoystick.button(RobotMap.kLeftLockWheels).whileTrue(m_driveSubsystem.lockWheelsCommand());
     m_leftJoystick.button(RobotMap.kLeftFixedShooterButton).toggleOnTrue(new StartEndCommand(
-        () -> m_ShooterSubsytem.setFixedShooterSpeed(true),
-        () -> m_ShooterSubsytem.setFixedShooterSpeed(false)));
-    m_buttonBox.button(RobotMap.kLeftReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
+        () -> {
+          m_ShooterSubsytem.setFixedShooterSpeed(true);
+          m_fixedSpeedOub.set(true);
+        },
+        () -> {
+          m_ShooterSubsytem.setFixedShooterSpeed(false);
+          m_fixedSpeedOub.set(false);
+        }));
+
+    m_leftJoystick.button(RobotMap.kLeftReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
 
     // m_rightJoystick.button(1).whileTrue(m_turretSubsystem.sysIdQuasistatic(Direction.kForward));
     // m_leftJoystick.button(1).whileTrue(m_turretSubsystem.sysIdQuasistatic(Direction.kReverse));
@@ -132,12 +150,21 @@ public class RobotContainer {
             m_FeederSubsystem));
     m_buttonBox.button(RobotMap.kReverseFeeder).whileTrue(m_FeederSubsystem.reverseFeederCommand());
     m_buttonBox.button(RobotMap.kSuspendAutoTurret).toggleOnTrue(new StartEndCommand(
-        () -> m_turretSubsystem.setSuspendAutoTurret(true),
-        () -> m_turretSubsystem.setSuspendAutoTurret(false)));
+        () -> {
+          m_turretSubsystem.setSuspendAutoTurret(true);
+          m_autoTurretPub.set(true);
+        },
+        () -> {
+          m_turretSubsystem.setSuspendAutoTurret(false);
+          m_autoTurretPub.set(false);
+        }));
 
     m_buttonBox.button(RobotMap.kFire).onTrue(startShootingCommand());
     m_buttonBox.button(RobotMap.kPassing).onTrue(startPassingCommand());
     m_buttonBox.button(RobotMap.kStopFire).onTrue(stopShootingCommand());
+
+    m_autoTurretPub.set(false);
+    m_fixedSpeedOub.set(false);
   }
 
   public double getDriveXInput() {
@@ -184,21 +211,26 @@ public class RobotContainer {
     if (m_ticks % 15 != 1)
       return;
 
-    m_mtCount.set(mt2.tagCount);
+    m_mtCountPub.set(mt2.tagCount);
+    m_poseXPub.set(mt2.pose.getX());
+    m_poseYPub.set(mt2.pose.getY());
     m_mt2TargetAnglePub.set(m_targetTurretAngle);
     m_mt2TargetDistancePub.set(m_targetDistance);
   }
 
   public void autoInit() {
     // uncomment to force fixed shooter speed and/or turret angle in auto
-    // m_ShooterSubsytem.setFixedShooterSpeed(true);
-    // m_turretSubsystem.setSuspendAutoTurret(true);
+    m_ShooterSubsytem.setFixedShooterSpeed(true);
+    m_turretSubsystem.setSuspendAutoTurret(true);
+    m_ShooterSubsytem.shooterToIdle();
   }
 
   public void teleOpInit() {
     // uncomment to force fixed shooter speed and/or turret angle in teleop
-    // m_ShooterSubsytem.setFixedShooterSpeed(true);
-    // m_turretSubsystem.setSuspendAutoTurret(true);
+    m_ShooterSubsytem.setFixedShooterSpeed(true);
+    m_turretSubsystem.setSuspendAutoTurret(true);
+    m_ShooterSubsytem.setFixedSpeed(m_ShooterSubsytem.k2MeterSpeed);
+    m_ShooterSubsytem.shooterToIdle();
   }
 
   private Command startShootingCommand() {
@@ -246,7 +278,7 @@ public class RobotContainer {
 
   private void createNamedCommandsForAutos() {
     NamedCommands.registerCommand("Shoot First 8", startAndStopShooting(3));
-    NamedCommands.registerCommand("Shoot Full Hopper", startAndStopShooting(10));
+    NamedCommands.registerCommand("Shoot Full Hopper", startAndStopShooting(8));
     NamedCommands.registerCommand("Start Shooting", startShootingCommand());
     NamedCommands.registerCommand("Stop Shooting", stopShootingCommand());
     NamedCommands.registerCommand("Extend Intake", extendIntakeCommand());

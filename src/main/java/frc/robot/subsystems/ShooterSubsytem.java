@@ -7,10 +7,12 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.networktables.DoubleSubscriber;
@@ -31,6 +33,7 @@ public class ShooterSubsytem extends SubsystemBase {
   }
 
   private TalonFX m_shooterWheel = new TalonFX(RobotMap.kShooterPrimaryWheelkraken);
+  private TalonFX m_shooterFollowerWheel = new TalonFX(RobotMap.kShooterFollowerWheelkraken);
   private Slot0Configs m_slot0Configs = new Slot0Configs();
   private VelocityVoltage m_velocityVoltage;
   private final PidValuesRecord pidValues = new PidValuesRecord(1.0, 0.0, 0);
@@ -46,7 +49,7 @@ public class ShooterSubsytem extends SubsystemBase {
   private double m_requestedVelocity;
 
   private final double kIdleSpeed = 10.0;
-  private final double k2MeterSpeed = 41.5;
+  public final double k2MeterSpeed = 42.5;
   private boolean m_fixedShooterSpeed;
   private double m_fixedSpeed = k2MeterSpeed;
 
@@ -67,6 +70,9 @@ public class ShooterSubsytem extends SubsystemBase {
     motorConfigs.withInverted(InvertedValue.CounterClockwise_Positive);
     m_shooterWheel.getConfigurator().apply(motorConfigs);
 
+    m_shooterFollowerWheel.setNeutralMode(NeutralModeValue.Coast);
+    m_shooterFollowerWheel.setControl(new Follower(RobotMap.kShooterPrimaryWheelkraken, MotorAlignmentValue.Opposed));
+
     stopShooter();
 
     var topic = m_networkTable.networkTable().getDoubleTopic("Fixed Speed");
@@ -78,14 +84,14 @@ public class ShooterSubsytem extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
 
-    if (RobotContainer.m_ticks % 15 != 11)
-      return;
+    // if (RobotContainer.m_ticks % 15 != 11)
+    //   return;
 
     // m_networkTable.dashboardUpdate(m_shooterWheel, m_slot0Configs, (t) ->
     // setVelocity(t), (b) -> {
     // });
 
-    m_fixedSpeed = m_fixedSpeedSub.get();
+    // m_fixedSpeed = m_fixedSpeedSub.get();
   }
 
   public void stopShooter() {
@@ -175,5 +181,9 @@ public class ShooterSubsytem extends SubsystemBase {
 
   public double getFixedSpeed() {
     return m_fixedSpeed;
+  }
+
+  public void setFixedSpeed(double speed) {
+    m_fixedSpeed = speed;
   }
 }
