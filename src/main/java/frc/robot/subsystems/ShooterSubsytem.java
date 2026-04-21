@@ -49,7 +49,7 @@ public class ShooterSubsytem extends SubsystemBase {
   private double m_requestedVelocity;
 
   private final double kIdleSpeed = 10.0;
-  public final double k2MeterSpeed = 42.5;
+  public final double k2MeterSpeed = 35;//42.5;
   private boolean m_fixedShooterSpeed;
   private double m_fixedSpeed = k2MeterSpeed;
 

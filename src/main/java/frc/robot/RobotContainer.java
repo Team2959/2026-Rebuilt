@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
@@ -45,7 +46,7 @@ public class RobotContainer {
   private final Conditioning m_driveXConditioning = new Conditioning();
   private final Conditioning m_driveYConditioning = new Conditioning();
   private final Conditioning m_turnConditioning = new Conditioning();
-  private double m_speedMultiplier = 0.95;
+  private double m_speedMultiplier = 0.5;
   private double m_shootingSpeedReduction = 1.0;
 
   private final CommandJoystick m_leftJoystick = new CommandJoystick(RobotMap.kLeftJoystick);
@@ -220,8 +221,8 @@ public class RobotContainer {
 
   public void autoInit() {
     // uncomment to force fixed shooter speed and/or turret angle in auto
-    m_ShooterSubsytem.setFixedShooterSpeed(true);
-    m_turretSubsystem.setSuspendAutoTurret(true);
+    // m_ShooterSubsytem.setFixedShooterSpeed(true);
+    // m_turretSubsystem.setSuspendAutoTurret(true);
     m_ShooterSubsytem.shooterToIdle();
   }
 
