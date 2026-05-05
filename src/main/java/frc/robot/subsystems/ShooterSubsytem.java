@@ -49,7 +49,8 @@ public class ShooterSubsytem extends SubsystemBase {
   private double m_requestedVelocity;
 
   private final double kIdleSpeed = 10.0;
-  public final double k2MeterSpeed = 35;//42.5;
+  public final double lowCeilingSpeed = 35;
+  public final double k2MeterSpeed = 42.5;
   private boolean m_fixedShooterSpeed;
   private double m_fixedSpeed = k2MeterSpeed;
 
@@ -175,8 +176,9 @@ public class ShooterSubsytem extends SubsystemBase {
     return m_fixedShooterSpeed;
   }
 
-  public void setFixedShooterSpeed(boolean suspend) {
-    m_fixedShooterSpeed = suspend;
+  public void setFixedShooterSpeed(boolean fixedSpeed) {
+    m_fixedShooterSpeed = fixedSpeed;
+    setVelocity(fixedSpeed ? getFixedSpeed() : kIdleSpeed);
   }
 
   public double getFixedSpeed() {

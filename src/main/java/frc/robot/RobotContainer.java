@@ -67,6 +67,7 @@ public class RobotContainer {
   private final DoublePublisher m_poseYPub;
   private final BooleanPublisher m_fixedSpeedOub;
   private final BooleanPublisher m_autoTurretPub;
+  private final BooleanPublisher m_lowCeilingPub;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -100,6 +101,8 @@ public class RobotContainer {
     m_autoTurretPub = topic2.publish();
     topic2 = datatable.getBooleanTopic("Fixed Speed on");
     m_fixedSpeedOub = topic2.publish();
+    topic2 = datatable.getBooleanTopic("Low Ceiling Speed on");
+    m_lowCeilingPub = topic2.publish();
 
     // Configure the trigger bindings
     configureBindings();
@@ -125,12 +128,25 @@ public class RobotContainer {
     m_leftJoystick.button(RobotMap.kLeftLockWheels).whileTrue(m_driveSubsystem.lockWheelsCommand());
     m_leftJoystick.button(RobotMap.kLeftFixedShooterButton).toggleOnTrue(new StartEndCommand(
         () -> {
+          m_ShooterSubsytem.setFixedSpeed(m_ShooterSubsytem.k2MeterSpeed);
           m_ShooterSubsytem.setFixedShooterSpeed(true);
           m_fixedSpeedOub.set(true);
+          m_lowCeilingPub.set(false);
         },
         () -> {
           m_ShooterSubsytem.setFixedShooterSpeed(false);
           m_fixedSpeedOub.set(false);
+        }));
+    m_leftJoystick.button(RobotMap.kLeftLowCeilingShooterButton).toggleOnTrue(new StartEndCommand(
+        () -> {
+          m_ShooterSubsytem.setFixedSpeed(m_ShooterSubsytem.lowCeilingSpeed);
+          m_ShooterSubsytem.setFixedShooterSpeed(true);
+          m_fixedSpeedOub.set(true);
+          m_lowCeilingPub.set(true);
+        },
+        () -> {
+          m_ShooterSubsytem.setFixedSpeed(m_ShooterSubsytem.k2MeterSpeed);
+          m_lowCeilingPub.set(false);
         }));
 
     m_leftJoystick.button(RobotMap.kLeftReverseHopper).whileTrue(m_hopperSubsystem.reverseHopperCommand());
@@ -222,15 +238,20 @@ public class RobotContainer {
   public void autoInit() {
     // uncomment to force fixed shooter speed and/or turret angle in auto
     // m_ShooterSubsytem.setFixedShooterSpeed(true);
+
+    // m_fixedSpeedOub.set(true);
     // m_turretSubsystem.setSuspendAutoTurret(true);
+    // m_autoTurretPub.set(true);
     m_ShooterSubsytem.shooterToIdle();
   }
 
   public void teleOpInit() {
     // uncomment to force fixed shooter speed and/or turret angle in teleop
-    m_ShooterSubsytem.setFixedShooterSpeed(true);
-    m_turretSubsystem.setSuspendAutoTurret(true);
-    m_ShooterSubsytem.setFixedSpeed(m_ShooterSubsytem.k2MeterSpeed);
+    // m_ShooterSubsytem.setFixedShooterSpeed(true);
+    // m_fixedSpeedOub.set(true);
+    // m_turretSubsystem.setSuspendAutoTurret(true);
+    // m_autoTurretPub.set(true);
+    // m_ShooterSubsytem.setFixedSpeed(m_ShooterSubsytem.k2MeterSpeed);
     m_ShooterSubsytem.shooterToIdle();
   }
 
